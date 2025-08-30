@@ -27,13 +27,7 @@ The goal is to capture memories, stories, and emotions in a conversational way, 
 - **Backend:** Node.js / Express OR Python (FastAPI)  
 - **Database:** PostgreSQL (for structured Q/A)  
 - **NLP Models:** HuggingFace Transformers / spaCy  
-- **Deployment:** Vercel (frontend), Railway/Heroku (backend)
-
----
-
-## 🚧 Current Status
-🚀 **In Progress** – Early development stage.  
-- [ ] Authentication
+- **Deployment:** Vercel (frontend), Render (backend)
 
 ---
 
