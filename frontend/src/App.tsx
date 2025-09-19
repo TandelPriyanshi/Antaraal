@@ -1,131 +1,96 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { ToastProvider } from "./contexts/ToastContext";
-import HomePage from "./page/HomePage";
-import SignIn from "./page/SignIn";
-import ForgotPassword from "./page/ForgotPassword";
-import SignUp from "./page/SignUp";
-import Dashboard from "./page/Dashboard";
-import LoadingSpinner from "./components/LoadingSpinner";
-import NotFound from "./page/NotFound";
-import DailyReflections from "./components/ui/DailyReflections";
-import EntryDetail from "./components/ui/EntryDetail";
-import InspirationPage from "./components/ui/InspirationPage";
-import PromptPage from "./components/ui/PromptPage";
-import PromptDetail from "./components/ui/PromptDetail";
-import StatsPage from "./components/ui/StatsPage";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import Homepage from "./pages/Homepage";
+import Features from "./pages/Features";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import NotFound from "./pages/NotFound";
+import DashboardLayout from "./components/DashboardLayout";
+import DailyReflections from "./pages/DailyReflections";
+import EntryDetail from "./pages/EntryDetail";
+import EntriesList from "./pages/EntriesList";
+import InspirationPage from "./pages/InspirationPage";
+import PromptDetail from "./pages/PromptDetail";
+import PromptPage from "./pages/PromptPage";
+import StatsPage from "./pages/StatsPage";
+import NewEntry from "./pages/NewEntry";
+import { EntriesProvider } from "./contexts/EntriesContext";
 
-// Wrapper component for protected routes
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, loading } = useAuth();
+const queryClient = new QueryClient();
 
-  if (loading) {
-    return <LoadingSpinner />;
+// Protected Route Wrapper
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/signin" replace />;
-};
-
-// Component to handle auth-based redirects
-const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
-  const { loading } = useAuth();
-  
-  if (loading) {
-    return <LoadingSpinner />;
+  if (!user) {
+    return <Navigate to="/signin" replace />;
   }
-  
-  // Just render children, no redirect needed as we want to stay on home page
+
   return <>{children}</>;
 };
 
-function App() {
-  return (
-    <AuthProvider>
-      <ToastProvider>
-        <Router>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            
-            {/* Protected routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            
-            {/* Home route - shows different content based on auth status */}
-            <Route
-              path="/"
-              element={
-                <AuthRedirect>
-                  <HomePage />
-                </AuthRedirect>
-              }
-            />
-            
-            {/* Protected Dashboard and Feature Routes */}
-            <Route
-              path="/journal/new"
-              element={
-                <PrivateRoute>
-                  <DailyReflections />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/entry/:id"
-              element={
-                <PrivateRoute>
-                  <EntryDetail />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/inspiration"
-              element={
-                <PrivateRoute>
-                  <InspirationPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/stats"
-              element={
-                <PrivateRoute>
-                  <StatsPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/prompt"
-              element={
-                <PrivateRoute>
-                  <PromptPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/prompt/:id"
-              element={
-                <PrivateRoute>
-                  <PromptDetail />
-                </PrivateRoute>
-              }
-            />
-            
-            {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
-      </ToastProvider>
-    </AuthProvider>
-  );
-}
+const AppContent = () => (
+  <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Homepage />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          
+          {/* Protected routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="reflections" element={<DailyReflections />} />
+            <Route path="entries" element={<EntriesList />} />
+            <Route path="entries/:id" element={<EntryDetail />} />
+            <Route path="inspiration" element={<InspirationPage />} />
+            <Route path="prompts" element={<PromptPage />} />
+            <Route path="prompt-detail" element={<PromptDetail />} />
+            <Route path="stats" element={<StatsPage />} />
+            <Route path="new-entry" element={<NewEntry />} />
+          </Route>
+          
+          {/* Catch-all route */}
+          <Route path="*" element={<NotFound />} />
+      </Routes>
+);
+
+const App = () => (
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <EntriesProvider>
+            <Toaster />
+            <Sonner />
+            <AppContent />
+          </EntriesProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </BrowserRouter>
+);
 
 export default App;

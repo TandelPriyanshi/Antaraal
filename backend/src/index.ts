@@ -1,11 +1,12 @@
 import 'reflect-metadata';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { config } from './config/config';
 import { initializeDatabase } from './data-source';
 import logger from './utils/logger';
 import authRoutes from './routes/auth.routes';
 import journalEntryRoutes from './routes/journalentry.routes';
+import { protectAllRoutes } from './middleware/protectAllRoutes.middleware';
 
 // Create Express app
 const app = express();
@@ -13,6 +14,9 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Apply protectAllRoutes middleware to all routes
+app.use(protectAllRoutes);
 
 // Routes
 app.use('/api/auth', authRoutes);
