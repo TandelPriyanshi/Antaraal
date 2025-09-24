@@ -27,6 +27,9 @@ const Navigation = () => {
             <Link to="/features" className="text-foreground hover:text-primary transition-colors">
               Features
             </Link>
+            <Link to="/subscription" className="text-foreground hover:text-primary transition-colors">
+              Subscription
+            </Link>
             <Link to="/about" className="text-foreground hover:text-primary transition-colors">
               About
             </Link>
@@ -69,6 +72,9 @@ const Navigation = () => {
               </Link>
               <Link to="/features" className="text-foreground hover:text-primary transition-colors py-2">
                 Features
+              </Link>
+              <Link to="/subscription" className="text-foreground hover:text-primary transition-colors py-2">
+                Subscription
               </Link>
               <Link to="/about" className="text-foreground hover:text-primary transition-colors py-2">
                 About

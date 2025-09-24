@@ -66,10 +66,6 @@ const EntriesList = () => {
             className="pl-10"
           />
         </div>
-        <Button variant="outline" size="sm" className="sm:w-auto">
-          <Filter size={16} className="mr-2" />
-          Filter
-        </Button>
       </div>
 
       {/* Stats */}

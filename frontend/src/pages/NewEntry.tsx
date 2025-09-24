@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Save, Send } from "lucide-react";
+import { ArrowLeft, Save, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,8 @@ const NewEntry = () => {
     title: "",
     content: "",
     mood: "",
-    tags: ""
+    tags: "",
+    date: new Date().toISOString().slice(0, 10)
   });
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -35,10 +36,11 @@ const NewEntry = () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const now = new Date();
+    const selectedDate = formData.date ? new Date(formData.date) : now;
     const newEntry = {
       title: formData.title,
       content: formData.content,
-      date: now.toLocaleDateString('en-US', { 
+      date: selectedDate.toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
@@ -67,6 +69,36 @@ const NewEntry = () => {
 
   const handleBack = () => {
     navigate(-1);
+  };
+
+  const handleGenerateSummary = async () => {
+    const text = formData.content.trim();
+    if (!text) {
+      toast({
+        title: "Nothing to summarize",
+        description: "Write some thoughts first.",
+      });
+      return;
+    }
+    const sentences = text.split(/(?<=[.!?])\s+/);
+    let summary = sentences.slice(0, 2).join(' ');
+    if (!summary) {
+      const words = text.split(/\s+/).slice(0, 40);
+      summary = words.join(' ');
+      if (words.length === 40) summary += '…';
+    }
+    try {
+      await navigator.clipboard.writeText(summary);
+      toast({
+        title: "Summary copied",
+        description: "A short summary was copied to your clipboard.",
+      });
+    } catch (e) {
+      toast({
+        title: "Summary generated",
+        description: summary,
+      });
+    }
   };
 
   const wordCount = formData.content.split(' ').filter(word => word.length > 0).length;
@@ -140,7 +172,7 @@ const NewEntry = () => {
                 value={formData.content}
                 onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                 placeholder="Start writing your thoughts here... Let your mind flow freely and capture whatever feels important to you today."
-                className="min-h-96 resize-none border-0 p-0 focus:ring-0 text-base leading-relaxed"
+                className="min-h-[25rem] resize-none border-0 p-0 focus:ring-0 text-base leading-relaxed"
               />
               <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                 <span>{charCount} characters</span>
@@ -148,10 +180,32 @@ const NewEntry = () => {
               </div>
             </CardContent>
           </Card>
+          <Button
+            size="sm"
+            onClick={handleGenerateSummary}
+            className="mt-2 bg-gradient-hero text-primary-foreground inline-flex items-center gap-2"
+          >
+            <Sparkles size={16} />
+            <span>Generate Summary</span>
+          </Button>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Date Selection */}
+          <Card className="border-0 shadow-soft">
+            <CardContent className="p-6">
+            <CardTitle className="text-lg">Select Date</CardTitle>
+              <Input
+                id="entry-date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                className="text-lg font-medium focus:ring-0 placeholder:text-muted-foreground"
+              />
+            </CardContent>
+          </Card>
+
           {/* Mood */}
           <Card className="border-0 shadow-soft">
             <CardHeader className="pb-4">

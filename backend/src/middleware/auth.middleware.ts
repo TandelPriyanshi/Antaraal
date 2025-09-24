@@ -7,7 +7,11 @@ import { JWT_CONFIG } from '../config/jwt.config';
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: {
+        id: number;
+        email: string;
+        [key: string]: any;
+      };
     }
   }
 }
@@ -33,7 +37,11 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Add user to request object
-    req.user = user;
+    req.user = {
+      id: user.id,
+      email: user.email,
+      ...user
+    };
     next();
   } catch (error) {
     console.error('Authentication error:', error);
@@ -54,3 +62,6 @@ export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   }
   res.status(403).json({ message: 'Access denied. Admin privileges required.' });
 };
+
+// Export auth as both auth and authMiddleware
+export const authMiddleware = auth;

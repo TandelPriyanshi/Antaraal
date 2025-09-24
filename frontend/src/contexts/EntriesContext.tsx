@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import api from '@/lib/api';
 
 export interface Entry {
   id: string;
@@ -15,10 +16,10 @@ export interface Entry {
 
 interface EntriesContextType {
   entries: Entry[];
-  addEntry: (entry: Omit<Entry, 'id' | 'createdAt'>) => void;
+  addEntry: (entry: Omit<Entry, 'id' | 'createdAt'>) => Promise<void> | void;
   getEntry: (id: string) => Entry | undefined;
-  updateEntry: (id: string, entry: Partial<Entry>) => void;
-  deleteEntry: (id: string) => void;
+  updateEntry: (id: string, entry: Partial<Entry>) => Promise<void> | void;
+  deleteEntry: (id: string) => Promise<void> | void;
 }
 
 const EntriesContext = createContext<EntriesContextType | undefined>(undefined);
@@ -31,69 +32,124 @@ export const useEntries = () => {
   return context;
 };
 
-const initialEntries: Entry[] = [
-  {
-    id: '1',
-    title: 'A Day of Gratitude and Growth',
-    content: `Today was one of those days that reminded me why I started this journey. I woke up early, around 6:30 AM, feeling refreshed after a good night's sleep. The morning sunlight streaming through my window immediately lifted my spirits.
+// Map backend JournalEntry -> UI Entry
+type ApiEntry = {
+  id: number;
+  date: string; // ISO date or YYYY-MM-DD
+  title: string;
+  content: string;
+  summary?: string | null;
+  mood?: string | null;
+  tags?: string[] | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
-I spent the first hour of my day in reflection and meditation. There's something magical about those quiet moments before the world wakes up. I felt grateful for this peaceful start and set my intentions for the day.
-
-Work was productive today. I finally completed the project I've been working on for weeks. The sense of accomplishment was overwhelming. I realized that persistence and small daily actions really do compound over time.
-
-During lunch, I called my parents. Hearing their voices always grounds me and reminds me of what's truly important. My mother shared some wisdom about patience that I'll carry with me.
-
-The evening was spent reading and preparing for tomorrow. I'm learning to appreciate these simple pleasures more and more. There's beauty in the ordinary moments that make up our lives.
-
-Tomorrow, I want to focus on being more present in my conversations and continuing to build on the momentum from today's accomplishments.`,
-    date: 'January 15, 2024',
-    time: '9:30 PM',
-    mood: 'Grateful',
-    tags: ['gratitude', 'productivity', 'family', 'meditation', 'reflection'],
-    wordCount: 234,
-    readTime: '2 min read',
-    createdAt: new Date('2024-01-15T21:30:00')
-  },
-  {
-    id: '2',
-    title: 'Weekend Adventures',
-    content: `Spent time with family and explored the local park. The weather was perfect and I felt grateful for these moments of connection and peace. We walked the trails, had a picnic, and just enjoyed being present together.`,
-    date: 'January 14, 2024',
-    time: '6:15 PM',
-    mood: 'Peaceful',
-    tags: ['family', 'nature', 'gratitude', 'weekend'],
-    wordCount: 45,
-    readTime: '1 min read',
-    createdAt: new Date('2024-01-14T18:15:00')
-  }
-];
+const mapApiToEntry = (e: ApiEntry): Entry => {
+  const created = new Date(e.createdAt ?? e.date);
+  const wc = e.content?.split(/\s+/).filter(Boolean).length || 0;
+  const dateStr = created.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr = created.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return {
+    id: String(e.id),
+    title: e.title,
+    content: e.content,
+    date: dateStr,
+    time: timeStr,
+    mood: e.mood ?? 'Reflective',
+    tags: e.tags ?? [],
+    wordCount: wc,
+    readTime: `${Math.max(1, Math.ceil(wc / 200))} min read`,
+    createdAt: created,
+  };
+};
 
 export const EntriesProvider = ({ children }: { children: ReactNode }) => {
-  const [entries, setEntries] = useState<Entry[]>(initialEntries);
+  const [entries, setEntries] = useState<Entry[]>([]);
 
-  const addEntry = (entryData: Omit<Entry, 'id' | 'createdAt'>) => {
-    const newEntry: Entry = {
-      ...entryData,
-      id: Date.now().toString(),
-      createdAt: new Date()
+  // Load current user's entries from API
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await api.get<{ data: ApiEntry[] }>(`/journal-entries`);
+        if (res.data?.data) {
+          setEntries(res.data.data.map(mapApiToEntry));
+        } else if (res.error) {
+          console.error('Failed to load entries:', res.error);
+        }
+      } catch (err) {
+        console.error('Entries load error:', err);
+      }
     };
-    setEntries(prev => [newEntry, ...prev]);
+    load();
+  }, []);
+
+  const addEntry = async (entryData: Omit<Entry, 'id' | 'createdAt'>) => {
+    try {
+      // Persist to backend using minimal required fields
+      const payload = {
+        title: entryData.title,
+        content: entryData.content,
+        date: new Date().toISOString(),
+        summary: null,
+        mood: entryData.mood,
+        tags: entryData.tags,
+      };
+      const res = await api.post<{ data: ApiEntry }>(`/journal-entries`, payload);
+      if (res.data?.data) {
+        const mapped = mapApiToEntry(res.data.data);
+        setEntries(prev => [mapped, ...prev]);
+      } else {
+        // Fallback: optimistic add if API not available
+        const now = new Date();
+        const wc = entryData.content.split(/\s+/).filter(Boolean).length;
+        const optimistic: Entry = {
+          id: String(Date.now()),
+          title: entryData.title,
+          content: entryData.content,
+          date: now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+          time: now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+          mood: entryData.mood || 'Reflective',
+          tags: entryData.tags || [],
+          wordCount: wc,
+          readTime: `${Math.max(1, Math.ceil(wc / 200))} min read`,
+          createdAt: now,
+        };
+        setEntries(prev => [optimistic, ...prev]);
+      }
+    } catch (err) {
+      console.error('Add entry error:', err);
+    }
   };
 
   const getEntry = (id: string) => {
     return entries.find(entry => entry.id === id);
   };
 
-  const updateEntry = (id: string, updatedData: Partial<Entry>) => {
-    setEntries(prev => 
-      prev.map(entry => 
-        entry.id === id ? { ...entry, ...updatedData } : entry
-      )
-    );
+  const updateEntry = async (id: string, updatedData: Partial<Entry>) => {
+    try {
+      const payload: any = {};
+      if (updatedData.title !== undefined) payload.title = updatedData.title;
+      if (updatedData.content !== undefined) payload.content = updatedData.content;
+      if (updatedData.date !== undefined) payload.date = new Date(updatedData.date).toISOString();
+      if (updatedData.mood !== undefined) payload.mood = updatedData.mood;
+      if (updatedData.tags !== undefined) payload.tags = updatedData.tags;
+      await api.put(`/journal-entries/${id}`, payload);
+    } catch (err) {
+      console.error('Update entry error:', err);
+    } finally {
+      setEntries(prev => prev.map(e => (e.id === id ? { ...e, ...updatedData } : e)));
+    }
   };
 
-  const deleteEntry = (id: string) => {
-    setEntries(prev => prev.filter(entry => entry.id !== id));
+  const deleteEntry = async (id: string) => {
+    try {
+      await api.delete(`/journal-entries/${id}`);
+    } catch (err) {
+      console.error('Delete entry error:', err);
+    } finally {
+      setEntries(prev => prev.filter(entry => entry.id !== id));
+    }
   };
 
   return (

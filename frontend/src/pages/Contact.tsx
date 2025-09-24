@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/ui/navigation";
+import AnimateOnScroll from "@/components/ui/AnimateOnScroll";
 import { 
   Mail, 
   Phone, 
@@ -113,17 +114,23 @@ const Contact = () => {
         <div className="absolute inset-0 bg-gradient-subtle opacity-50"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-              Get In Touch
-            </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              We're Here to
-              <span className="bg-gradient-hero bg-clip-text text-transparent"> Help You</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-              Have questions about your journaling journey? Need technical support? 
-              Want to share feedback? We'd love to hear from you and help you make the most of your Antaraal experience.
-            </p>
+            <AnimateOnScroll>
+              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
+                Get In Touch
+              </Badge>
+            </AnimateOnScroll>
+            <AnimateOnScroll delay={100}>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
+                We're Here to
+                <span className="bg-gradient-hero bg-clip-text text-transparent"> Help You</span>
+              </h1>
+            </AnimateOnScroll>
+            <AnimateOnScroll delay={180}>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
+                Have questions about your journaling journey? Need technical support? 
+                Want to share feedback? We'd love to hear from you and help you make the most of your Antaraal experience.
+              </p>
+            </AnimateOnScroll>
           </div>
         </div>
       </section>
@@ -131,24 +138,28 @@ const Contact = () => {
       {/* Contact Info Cards */}
       <section className="py-16 bg-background/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
             {contactInfo.map((info, index) => (
-              <Card key={index} className="border-0 shadow-soft hover:shadow-elevated transition-all duration-300 text-center group">
-                <CardContent className="p-6">
-                  <div className="p-3 bg-gradient-subtle rounded-lg w-fit mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    {info.icon}
-                  </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">
-                    {info.title}
-                  </h3>
-                  <p className="text-primary font-semibold mb-2">
-                    {info.details}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {info.description}
-                  </p>
-                </CardContent>
-              </Card>
+              <AnimateOnScroll key={index} delay={index * 100}>
+                <Card className="border-0 shadow-soft text-center bg-gradient-feature h-full min-h-[220px]">
+                  <CardContent className="p-6">
+                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+                      {React.isValidElement(info.icon)
+                        ? React.cloneElement(info.icon as React.ReactElement, { className: "text-primary-foreground", size: 24 })
+                        : info.icon}
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-2">
+                      {info.title}
+                    </h3>
+                    <p className="text-primary font-semibold mb-2">
+                      {info.details}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {info.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </AnimateOnScroll>
             ))}
           </div>
         </div>
@@ -161,6 +172,7 @@ const Contact = () => {
             
             {/* Contact Form */}
             <div>
+              <AnimateOnScroll>
               <Card className="border-0 shadow-elevated">
                 <CardHeader>
                   <CardTitle className="text-2xl flex items-center">
@@ -249,6 +261,7 @@ const Contact = () => {
                   )}
                 </CardContent>
               </Card>
+              </AnimateOnScroll>
             </div>
 
             {/* Support Options */}
@@ -264,43 +277,47 @@ const Contact = () => {
 
               <div className="space-y-4">
                 {supportOptions.map((option, index) => (
-                  <Card key={index} className="border-0 shadow-soft">
-                    <CardContent className="p-6">
-                      <div className="flex items-start space-x-4">
-                        <div className="p-2 bg-gradient-subtle rounded-lg">
-                          {option.icon}
+                  <AnimateOnScroll key={index} delay={index * 100}>
+                    <Card className="border-0 shadow-soft">
+                      <CardContent className="p-6">
+                        <div className="flex items-start space-x-4">
+                          <div className="p-2 bg-gradient-subtle rounded-lg">
+                            {option.icon}
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-foreground mb-2">
+                              {option.title}
+                            </h3>
+                            <p className="text-muted-foreground">
+                              {option.description}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-lg font-bold text-foreground mb-2">
-                            {option.title}
-                          </h3>
-                          <p className="text-muted-foreground">
-                            {option.description}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </AnimateOnScroll>
                 ))}
               </div>
 
               {/* Quick Links */}
-              <Card className="border-0 shadow-soft bg-gradient-hero text-primary-foreground">
-                <CardContent className="p-6 text-center">
-                  <BookOpen size={32} className="mx-auto mb-4 opacity-80" />
-                  <h3 className="text-xl font-bold mb-2">Need Immediate Help?</h3>
-                  <p className="opacity-90 mb-4">
-                    Check out our help center for instant answers to common questions.
-                  </p>
-                  <div className="flex justify-center">
-                    <Link to="/help">
-                      <Button variant="secondary" size="sm">
-                        Help Center
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+              <AnimateOnScroll>
+                <Card className="border-0 shadow-soft bg-gradient-hero text-primary-foreground">
+                  <CardContent className="p-6 text-center">
+                    <BookOpen size={32} className="mx-auto mb-4 opacity-80" />
+                    <h3 className="text-xl font-bold mb-2">Need Immediate Help?</h3>
+                    <p className="opacity-90 mb-4">
+                      Check out our help center for instant answers to common questions.
+                    </p>
+                    <div className="flex justify-center">
+                      <Link to="/help">
+                        <Button variant="secondary" size="sm">
+                          Help Center
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </AnimateOnScroll>
             </div>
           </div>
         </div>
@@ -320,8 +337,9 @@ const Contact = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-soft">
-                <CardContent className="p-6">
+              <AnimateOnScroll>
+                <Card className="border-0 shadow-soft">
+                  <CardContent className="p-6">
                   <h3 className="text-lg font-bold text-foreground mb-3">
                     How secure is my journal data?
                   </h3>
@@ -329,11 +347,13 @@ const Contact = () => {
                     Your data is protected with end-to-end encryption and stored securely. 
                     We never read your entries or share your personal information.
                   </p>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </AnimateOnScroll>
               
-              <Card className="border-0 shadow-soft">
-                <CardContent className="p-6">
+              <AnimateOnScroll delay={100}>
+                <Card className="border-0 shadow-soft">
+                  <CardContent className="p-6">
                   <h3 className="text-lg font-bold text-foreground mb-3">
                     Can I export my journal entries?
                   </h3>
@@ -341,11 +361,13 @@ const Contact = () => {
                     Yes! You can export your entries in multiple formats including PDF, 
                     Word, and plain text at any time.
                   </p>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </AnimateOnScroll>
               
-              <Card className="border-0 shadow-soft">
-                <CardContent className="p-6">
+              <AnimateOnScroll delay={180}>
+                <Card className="border-0 shadow-soft">
+                  <CardContent className="p-6">
                   <h3 className="text-lg font-bold text-foreground mb-3">
                     Is there a mobile app available?
                   </h3>
@@ -353,11 +375,13 @@ const Contact = () => {
                     Our web app works great on mobile devices, and we're currently 
                     developing native iOS and Android apps.
                   </p>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </AnimateOnScroll>
               
-              <Card className="border-0 shadow-soft">
-                <CardContent className="p-6">
+              <AnimateOnScroll delay={260}>
+                <Card className="border-0 shadow-soft">
+                  <CardContent className="p-6">
                   <h3 className="text-lg font-bold text-foreground mb-3">
                     How does the AI writing assistant work?
                   </h3>
@@ -365,8 +389,9 @@ const Contact = () => {
                     Our AI provides personalized prompts and suggestions based on your 
                     writing patterns while maintaining complete privacy.
                   </p>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </AnimateOnScroll>
             </div>
           </div>
         </div>

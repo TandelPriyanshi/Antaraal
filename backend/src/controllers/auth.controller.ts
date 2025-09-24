@@ -9,7 +9,7 @@ const userRepository = Users.getRepository(AppDataSource);
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { username, email, password, pic_url } = req.body;
+    const { username, email, password, pic_url: profilePic } = req.body;
 
     // Check if user already exists
     const existingUser = await userRepository.findOne({ where: { email } });
@@ -25,7 +25,7 @@ export const register = async (req: Request, res: Response) => {
     user.username = username;
     user.email = email;
     user.password = hashedPassword;
-    if (pic_url) user.pic_url = pic_url;
+    if (profilePic) user.profilePic = profilePic;
     await userRepository.save(user);
 
     // Generate token

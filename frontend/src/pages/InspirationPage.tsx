@@ -92,10 +92,6 @@ const InspirationPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Inspiration Hub</h1>
           <p className="text-muted-foreground mt-1">Discover quotes, stories, and prompts to fuel your journaling</p>
         </div>
-        <Button className="bg-gradient-hero text-primary-foreground">
-          <Shuffle size={16} className="mr-2" />
-          Random Inspiration
-        </Button>
       </div>
 
       {/* Search */}

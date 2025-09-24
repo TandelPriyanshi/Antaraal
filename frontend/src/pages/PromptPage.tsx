@@ -95,10 +95,6 @@ const PromptPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Writing Prompts</h1>
           <p className="text-muted-foreground mt-1">Discover thought-provoking prompts to inspire your journaling</p>
         </div>
-        <Button className="bg-gradient-hero text-primary-foreground">
-          <Shuffle size={16} className="mr-2" />
-          Random Prompt
-        </Button>
       </div>
 
       {/* Search */}

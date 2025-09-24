@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,9 +17,105 @@ import {
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  // Fetch user profile on component mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch('http://localhost:5002/api/profile/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Profile data:', data); // Debug log
+          if (data.profilePic) {
+            // Ensure the URL is properly formed
+            const baseUrl = 'http://localhost:5002';
+            let profilePicUrl = data.profilePic;
+            
+            // If it's already a full URL, use it as is
+            if (!profilePicUrl.startsWith('http')) {
+              // Remove any leading slashes to avoid double slashes
+              const cleanPath = profilePicUrl.startsWith('/') 
+                ? profilePicUrl.substring(1) 
+                : profilePicUrl;
+              // Add timestamp to prevent caching
+              const timestamp = new Date().getTime();
+              // Make sure we don't have double slashes
+              const separator = baseUrl.endsWith('/') ? '' : '/';
+              profilePicUrl = `${baseUrl}${separator}${cleanPath}?t=${timestamp}`;
+            }
+            
+            console.log('Profile picture URL:', profilePicUrl);
+            setProfilePicture(profilePicUrl);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  const handleProfilePictureChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to update your profile picture');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('profilePicture', file);
+
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:5002/api/profile/upload-picture', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        console.log('Upload response data:', data); // Debug log
+        // Ensure the URL is properly formed
+        const baseUrl = 'http://localhost:5002';
+        const profilePicUrl = data.filePath.startsWith('http') 
+          ? data.filePath 
+          : `${baseUrl}${data.filePath.startsWith('/') ? '' : '/'}${data.filePath}`;
+        console.log('New profile picture URL:', profilePicUrl); // Debug log
+        setProfilePicture(profilePicUrl);
+      } else {
+        console.error('Failed to upload profile picture:', data.message);
+        // Show error to user
+        alert(data.message || 'Failed to upload profile picture');
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert('An error occurred while uploading the profile picture');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const navigation = [
     { name: 'Daily Reflections', href: '/dashboard/reflections', icon: Calendar },
@@ -100,9 +196,60 @@ const DashboardLayout = () => {
 
         <div className="p-4 border-t border-border">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-gradient-subtle rounded-full flex items-center justify-center">
-              <User size={16} className="text-muted-foreground" />
-            </div>
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="relative group"
+              aria-label="Change profile picture"
+            >
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleProfilePictureChange}
+                disabled={isLoading}
+                accept="image/*"
+                className="hidden"
+              />
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-subtle flex items-center justify-center relative">
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary"></div>
+                ) : profilePicture ? (
+                  <div className="w-full h-full overflow-hidden rounded-full bg-muted flex items-center justify-center">
+                    <div className="relative w-full h-full">
+                      <img 
+                        src={profilePicture} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Error loading profile picture:', {
+                            url: profilePicture,
+                            error: e,
+                            timestamp: new Date().toISOString()
+                          });
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.style.display = 'none';
+                        }}
+                        onLoad={() => {
+                          console.log('Profile picture loaded successfully:', profilePicture);
+                        }}
+                      />
+                      {isLoading && (
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-muted rounded-full">
+                    <User size={18} className="text-muted-foreground" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity flex items-center justify-center">
+                  <User size={16} className="text-white" />
+                </div>
+              </div>
+            </button>
             <div>
               <p className="text-sm font-medium text-foreground">Welcome back!</p>
               <p className="text-xs text-muted-foreground">{user?.email || 'User'}</p>

@@ -18,8 +18,8 @@ export class Users {
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 
-  @Column({ name: 'pic_url', nullable: true })
-  pic_url?: string;
+  @Column({ name: 'profile_pic', nullable: true, default: null })
+  profilePic?: string;
 
   @OneToMany(() => JournalEntry, (journalEntry) => journalEntry.user)
   journalEntries: JournalEntry[];

@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/ui/navigation";
+import AnimateOnScroll from "@/components/ui/AnimateOnScroll";
+import heroImage from "@/assets/hero-journal.jpg"; // fallback
 import { 
   Heart, 
   Users, 
@@ -23,24 +25,24 @@ import {
 const About = () => {
   const values = [
     {
-      icon: <Heart size={24} className="text-primary" />,
-      title: "Mindful Living",
-      description: "We believe in the power of reflection and mindfulness to transform lives and foster personal growth."
-    },
-    {
       icon: <Shield size={24} className="text-primary" />,
       title: "Privacy First",
-      description: "Your thoughts are sacred. We prioritize your privacy with end-to-end encryption and secure storage."
+      description: "Your memories are yours alone. Antaraal is designed with security at the core so your personal stories stay private."
+    },
+    {
+      icon: <Target size={24} className="text-primary" />,
+      title: "Purpose Driven",
+      description: "We help people capture life moments and find meaning through mindful reflection and thoughtful AI insights."
     },
     {
       icon: <Users size={24} className="text-primary" />,
-      title: "Community Support",
-      description: "Building a supportive community where individuals can share their journey and inspire others."
+      title: "Community Focused",
+      description: "We’re building a kind, supportive community for journalers who value introspection, growth, and storytelling."
     },
     {
-      icon: <Lightbulb size={24} className="text-primary" />,
-      title: "Innovation",
-      description: "Combining cutting-edge AI technology with timeless journaling practices for enhanced self-discovery."
+      icon: <Award size={24} className="text-primary" />,
+      title: "Excellence",
+      description: "We obsess over quality and keep improving Antaraal based on real user feedback and evolving needs."
     }
   ];
 
@@ -54,11 +56,11 @@ const About = () => {
     {
       name: "Smruti Pradhan",
       role: "Backend Developer & NLP Engineer",
-      bio: "Specialized in backend development and natural language processing, creating AI-powered features for enhanced journaling.",
+      bio: "Specialized in backend development and natural language processing, creating AI-powered features for journaling.",
       image: "👩‍💻"
     },
     {
-      name: "Khushi Sutaria",
+      name: "Khushi Sutariya",
       role: "Frontend Developer & UI Designer",
       bio: "Frontend specialist focused on creating beautiful, responsive interfaces and seamless user experiences.",
       image: "👩‍🎨"
@@ -82,60 +84,105 @@ const About = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="relative pt-16 pb-12 sm:pt-20 sm:pb-16 md:pt-24 md:pb-20 lg:pt-28 lg:pb-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-subtle opacity-50"></div>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-              Our Story
-            </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              Empowering Lives Through
-              <span className="bg-gradient-hero bg-clip-text text-transparent"> Mindful Journaling</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed">
-              At Antaraal Life Scribe, we believe that every person has a unique story worth telling. 
-              Our mission is to provide the tools and inspiration needed to capture, reflect on, 
-              and learn from life's precious moments.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/signup">
-                <Button size="lg" className="bg-gradient-hero text-primary-foreground">
-                  <BookOpen size={20} className="mr-2" />
-                  Start Your Journey
-                </Button>
-              </Link>
-              <Link to="/features">
-                <Button size="lg" variant="outline">
-                  <Sparkles size={20} className="mr-2" />
-                  Explore Features
-                </Button>
-              </Link>
+      {/* Hero Section with background image */}
+      <section className="relative pt-20 sm:pt-24 md:pt-28">
+        {/* Prefer group-of-people image (remote), fallback to local hero */}
+        <img
+          src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1920&auto=format&fit=crop"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = heroImage; }}
+          alt="A diverse group of people collaborating and smiling around a table"
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
+        />
+        <div className="absolute inset-0 bg-primary/80" />
+        <div className="relative z-10">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+            <div className="max-w-4xl mx-auto text-center py-16 sm:py-20 lg:py-24">
+              <AnimateOnScroll>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground">
+                  About <span className="bg-gradient-hero bg-clip-text text-transparent">Antaraal</span>
+                </h1>
+              </AnimateOnScroll>
+              <AnimateOnScroll delay={120}>
+                <p className="text-lg sm:text-xl text-primary-foreground/90 mt-4 max-w-3xl mx-auto">
+                  We’re on a mission to help people capture, understand, and cherish their life stories through the power of AI and thoughtful design.
+                </p>
+              </AnimateOnScroll>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Mission Statement */}
-      <section className="py-16 bg-background/50">
+      {/* Title + Divider (Inspiring change) */}
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-0 shadow-elevated bg-gradient-hero text-primary-foreground">
-              <CardContent className="p-8 sm:p-12 text-center">
-                <Quote size={48} className="mx-auto mb-6 opacity-80" />
-                <h2 className="text-3xl sm:text-4xl font-bold mb-6">Our Mission</h2>
-                <p className="text-lg opacity-90 leading-relaxed mb-6">
-                  To democratize the power of self-reflection and personal growth through intelligent, 
-                  secure, and beautiful journaling experiences. We're building more than just an app – 
-                  we're creating a movement toward more mindful, intentional living.
+          <div className="max-w-5xl mx-auto text-center">
+            <AnimateOnScroll>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Inspiring change</h2>
+            </AnimateOnScroll>
+            <div className="mt-3 flex items-center justify-center">
+              <span className="w-12 h-1 bg-primary rounded-full"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Alternating media blocks (like reference) */}
+      <section className="py-8 sm:py-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+            {/* Image left */}
+            <AnimateOnScroll>
+              <img
+                src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop"
+                alt="Hand holding a pen over a journal on a desk"
+                className="w-full rounded-2xl shadow-soft object-cover"
+              />
+            </AnimateOnScroll>
+            {/* Text right */}
+            <AnimateOnScroll delay={120}>
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-semibold text-foreground mb-3">
+                  You are what you write. So write brilliantly.
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Antaraal began with a simple observation: we capture countless moments, yet few tools help us truly make sense of them. We wanted a companion that encourages reflection, reveals patterns, and turns everyday experiences into a meaningful personal narrative.
                 </p>
-                <div className="flex items-center justify-center space-x-2 text-sm opacity-80">
-                  <Heart size={16} className="text-red-400" />
-                  <span>Founded in 2023 with love and purpose</span>
+                <p className="text-muted-foreground leading-relaxed mt-4">
+                  Drawing from journaling traditions and modern AI, we built Antaraal to be gentle, private, and deeply helpful—never replacing your story, only illuminating it.
+                </p>
+              </div>
+            </AnimateOnScroll>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-4 sm:py-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+            {/* Text left */}
+            <AnimateOnScroll>
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-semibold text-foreground mb-3">Write with a purpose</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Today, Antaraal supports a growing community around the world. Our focus remains the same: empower you to understand your emotions, celebrate progress, and preserve memories that matter.
+                </p>
+                <div className="mt-6">
+                  <Link to="/features">
+                    <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                      Learn more
+                    </Button>
+                  </Link>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </AnimateOnScroll>
+            {/* Image right */}
+            <AnimateOnScroll delay={120}>
+              <img
+                src="https://images.unsplash.com/photo-1526481280698-8fcc13fdc616?q=80&w=1200&auto=format&fit=crop"
+                alt="Waterfall and nature symbolizing clarity"
+                className="w-full rounded-2xl shadow-soft object-cover"
+              />
+            </AnimateOnScroll>
           </div>
         </div>
       </section>
@@ -145,31 +192,42 @@ const About = () => {
       <section className="py-16 bg-background/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Our Core Values
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              These principles guide everything we do, from product development to community building.
-            </p>
+            <AnimateOnScroll>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Our Values</h2>
+            </AnimateOnScroll>
+            <AnimateOnScroll delay={100}>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">The principles that guide everything we do at Antaraal.</p>
+            </AnimateOnScroll>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-4 gap-6 max-w-6xl mx-auto">
             {values.map((value, index) => (
-              <Card key={index} className="border-0 shadow-soft hover:shadow-elevated transition-all duration-300 group">
-                <CardHeader className="pb-4">
-                  <div className="p-3 bg-gradient-subtle rounded-lg w-fit mb-4 group-hover:scale-110 transition-transform">
-                    {value.icon}
-                  </div>
-                  <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                    {value.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {value.description}
-                  </p>
-                </CardContent>
-              </Card>
+              <AnimateOnScroll key={index} delay={index * 120}>
+                <Card className={`h-full border-0 shadow-elevated bg-gradient-feature rounded-2xl overflow-hidden ${
+                  index % 2 === 0 ? '' : ''
+                }`}>
+                  <CardContent className="p-0">
+                    <div className={`flex flex-col items-start p-6`}>
+                      {/* Icon Section */}
+                      <div className="flex-shrink-0 w-14 h-14 bg-primary rounded-full flex items-center justify-center">
+                        {React.isValidElement(value.icon)
+                          ? React.cloneElement(value.icon as React.ReactElement, { className: "text-primary-foreground", size: 24 })
+                          : value.icon}
+                      </div>
+                      
+                      {/* Content Section */}
+                      <div className="mt-4 w-full">
+                        <h3 className="text-xl font-bold text-foreground mb-2">
+                          {value.title}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {value.description}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </AnimateOnScroll>
             ))}
           </div>
         </div>
@@ -178,144 +236,65 @@ const About = () => {
       {/* Team Section */}
       <section className="py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Meet Our Team
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Passionate individuals dedicated to helping you discover the power of mindful journaling.
-            </p>
-          </div>
+          <AnimateOnScroll>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+                Meet Our Team
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Passionate individuals dedicated to helping you discover the power of mindful journaling.
+              </p>
+            </div>
+          </AnimateOnScroll>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {team.map((member, index) => (
-              <Card key={index} className="border-0 shadow-soft hover:shadow-elevated transition-all duration-300 text-center group">
-                <CardContent className="p-6">
-                  <div className="text-6xl mb-4 group-hover:scale-110 transition-transform">
-                    {member.image}
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">
-                    {member.name}
-                  </h3>
-                  <Badge variant="secondary" className="mb-4">
-                    {member.role}
-                  </Badge>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {member.bio}
-                  </p>
-                </CardContent>
-              </Card>
+              <AnimateOnScroll key={index} delay={index * 120}>
+                <Card className="border-0 shadow-soft text-center">
+                  <CardContent className="p-6">
+                    <div className="text-6xl mb-4">
+                      {member.image}
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      {member.name}
+                    </h3>
+                    <Badge variant="secondary" className="mb-4">
+                      {member.role}
+                    </Badge>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {member.bio}
+                    </p>
+                  </CardContent>
+                </Card>
+              </AnimateOnScroll>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Story Section */}
-      <section className="py-16 bg-background/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-                Our Journey
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                From a simple idea to a global community of mindful journalers.
-              </p>
-            </div>
-            
-            <div className="space-y-8">
-              <Card className="border-0 shadow-soft">
-                <CardContent className="p-8">
-                  <div className="flex items-start space-x-4">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Lightbulb size={24} className="text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-foreground mb-2">The Spark</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        It all started when our founder, Sarah, realized that traditional journaling apps 
-                        lacked the intelligence and personalization needed to truly support personal growth. 
-                        She envisioned a platform that could understand context, provide meaningful prompts, 
-                        and help users discover patterns in their thoughts and emotions.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-0 shadow-soft">
-                <CardContent className="p-8">
-                  <div className="flex items-start space-x-4">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Users size={24} className="text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-foreground mb-2">Building Community</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        What began as a personal project quickly grew into something much larger. 
-                        We discovered that people everywhere were seeking deeper connection with themselves 
-                        and meaningful ways to process their experiences. Our beta community of 100 users 
-                        has now grown to over 50,000 active journalers worldwide.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-0 shadow-soft">
-                <CardContent className="p-8">
-                  <div className="flex items-start space-x-4">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Globe size={24} className="text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-foreground mb-2">Global Impact</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Today, Antaraal Life Scribe serves users in over 150 countries, supporting 
-                        multiple languages and cultural contexts. We're proud to be part of millions 
-                        of personal growth journeys, helping people develop greater self-awareness, 
-                        emotional intelligence, and life satisfaction.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <Card className="border-0 shadow-elevated bg-gradient-hero text-primary-foreground">
-              <CardContent className="p-8 sm:p-12">
-                <Award size={48} className="mx-auto mb-6 opacity-80" />
-                <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-                  Join Our Story
-                </h2>
-                <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
-                  Become part of a global community committed to mindful living and personal growth. 
-                  Your journey of self-discovery starts with a single entry.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link to="/signup">
-                    <Button size="lg" variant="secondary">
-                      <Zap size={20} className="mr-2" />
-                      Start Journaling Today
-                    </Button>
-                  </Link>
-                  <Link to="/features">
-                    <Button size="lg" variant="outline" className="bg-white text-primary border-white/80">
-                      <Sparkles size={20} className="mr-2" />
-                      Explore Features
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
+      {/* CTA Banner (match Homepage) */}
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+          <AnimateOnScroll>
+            <Card className="bg-gradient-hero text-center p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20 border-0 rounded-2xl sm:rounded-3xl">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-foreground mb-4 sm:mb-6 leading-tight">
+                Ready to start your journey?
+              </h2>
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-primary-foreground/90 mb-6 sm:mb-8 max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto px-4">
+                Join thousands of people who are already capturing their life stories with Antaraal.
+              </p>
+              <Link to="/signup">
+                <Button 
+                  size="lg"
+                  className="bg-background text-foreground hover:bg-background/90 hover:shadow-glow transition-all w-full sm:w-auto text-sm sm:text-base"
+                >
+                  Start Your Free Journal
+                  <ArrowRight className="ml-2" size={18} />
+                </Button>
+              </Link>
             </Card>
-          </div>
+          </AnimateOnScroll>
         </div>
       </section>
 

@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Users } from './user.entity';
+import { Tags } from './Tags.entity';
 
 @Entity('journal_entries')
 export class JournalEntry {
@@ -20,6 +21,9 @@ export class JournalEntry {
   content!: string;
 
   @Column('text', { nullable: true })
+  feeling!: string;
+
+  @Column('text', { nullable: true })
   summary: string | null = null;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -27,4 +31,7 @@ export class JournalEntry {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  @OneToMany(() => Tags, (tags) => tags.journal)
+  tags: Tags[];
 }
