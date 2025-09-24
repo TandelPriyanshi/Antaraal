@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Save, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Send, Sparkles, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useEntries } from "@/contexts/EntriesContext";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +23,7 @@ const NewEntry = () => {
     content: "",
     mood: "",
     tags: "",
-    date: new Date().toISOString().slice(0, 10)
+    date: new Date()
   });
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -31,40 +34,44 @@ const NewEntry = () => {
 
   const handleSubmit = async (action: 'save' | 'publish') => {
     setIsPublishing(action === 'publish');
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     const now = new Date();
-    const selectedDate = formData.date ? new Date(formData.date) : now;
+    const selectedDate = formData.date || now;
+
     const newEntry = {
       title: formData.title,
       content: formData.content,
-      date: selectedDate.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-      time: now.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit' 
+      date: selectedDate, // Pass the actual Date object
+      time: now.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
       }),
       mood: formData.mood,
       tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
       wordCount,
       readTime: `${Math.ceil(wordCount / 200)} min read`
     };
-    
-    addEntry(newEntry);
-    
-    toast({
-      title: action === 'publish' ? "Entry Published!" : "Entry Saved!",
-      description: `Your entry "${formData.title}" has been ${action === 'publish' ? 'published' : 'saved'} successfully.`,
-    });
-    
-    // Navigate back to entries
-    navigate('/dashboard/entries');
-    setIsPublishing(false);
+
+    try {
+      await addEntry(newEntry);
+
+      toast({
+        title: action === 'publish' ? "Entry Published!" : "Entry Saved!",
+        description: `Your entry "${formData.title}" has been ${action === 'publish' ? 'published' : 'saved'} successfully.`,
+      });
+
+      // Navigate back to entries
+      navigate('/dashboard/entries');
+    } catch (error) {
+      console.error('Error saving entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save entry. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const handleBack = () => {
@@ -172,7 +179,7 @@ const NewEntry = () => {
                 value={formData.content}
                 onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                 placeholder="Start writing your thoughts here... Let your mind flow freely and capture whatever feels important to you today."
-                className="min-h-[25rem] resize-none border-0 p-0 focus:ring-0 text-base leading-relaxed"
+                className="min-h-[27rem] resize-none border-0 p-0 focus:ring-0 text-base leading-relaxed"
               />
               <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                 <span>{charCount} characters</span>
@@ -195,14 +202,44 @@ const NewEntry = () => {
           {/* Date Selection */}
           <Card className="border-0 shadow-soft">
             <CardContent className="p-6">
-            <CardTitle className="text-lg">Select Date</CardTitle>
-              <Input
-                id="entry-date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                className="text-lg font-medium focus:ring-0 placeholder:text-muted-foreground"
-              />
+            <CardTitle className="text-lg mb-3">Select Date</CardTitle>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.date ? format(formData.date, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.date}
+                    onSelect={(date) => setFormData(prev => ({ ...prev, date: date || new Date() }))}
+                    initialFocus
+                  />
+                  <div className="p-3 border-t flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFormData(prev => ({ ...prev, date: new Date() }))}
+                      className="flex-1"
+                    >
+                      Today
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFormData(prev => ({ ...prev, date: undefined }))}
+                      className="flex-1"
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </CardContent>
           </Card>
 

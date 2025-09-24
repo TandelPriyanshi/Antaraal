@@ -7,6 +7,9 @@ import Footer from "@/components/Footer";
 import Navigation from "@/components/ui/navigation";
 import AnimateOnScroll from "@/components/ui/AnimateOnScroll";
 import heroImage from "@/assets/hero-journal.jpg"; // fallback
+import about1 from "@/assets/about1.jpg";
+import about2 from "@/assets/about2.jpg";
+import { Box } from "@/components/ui/box";
 import { 
   Heart, 
   Users, 
@@ -91,9 +94,9 @@ const About = () => {
           src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1920&auto=format&fit=crop"
           onError={(e) => { (e.currentTarget as HTMLImageElement).src = heroImage; }}
           alt="A diverse group of people collaborating and smiling around a table"
-          className="absolute inset-0 w-full h-full object-cover opacity-60"
+          className="absolute inset-0 w-full h-full object-cover opacity-80"
         />
-        <div className="absolute inset-0 bg-primary/80" />
+        <div className="absolute inset-0 bg-primary/50" />
         <div className="relative z-10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
             <div className="max-w-4xl mx-auto text-center py-16 sm:py-20 lg:py-24">
@@ -133,8 +136,8 @@ const About = () => {
             {/* Image left */}
             <AnimateOnScroll>
               <img
-                src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop"
-                alt="Hand holding a pen over a journal on a desk"
+                src={about1}
+                alt="Journaling and reflection"
                 className="w-full rounded-2xl shadow-soft object-cover"
               />
             </AnimateOnScroll>
@@ -178,8 +181,8 @@ const About = () => {
             {/* Image right */}
             <AnimateOnScroll delay={120}>
               <img
-                src="https://images.unsplash.com/photo-1526481280698-8fcc13fdc616?q=80&w=1200&auto=format&fit=crop"
-                alt="Waterfall and nature symbolizing clarity"
+                src={about2}
+                alt="Clarity and inspiration"
                 className="w-full rounded-2xl shadow-soft object-cover"
               />
             </AnimateOnScroll>
@@ -188,8 +191,8 @@ const About = () => {
       </section>
 
 
-      {/* Values Section */}
-      <section className="py-16 bg-background/50">
+      {/* Values Section (match Homepage Features styling) */}
+      <section className="py-16 bg-card">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <AnimateOnScroll>
@@ -200,33 +203,26 @@ const About = () => {
             </AnimateOnScroll>
           </div>
           
-          <div className="grid grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-6 xl:gap-8 items-stretch max-w-6xl mx-auto">
             {values.map((value, index) => (
               <AnimateOnScroll key={index} delay={index * 120}>
-                <Card className={`h-full border-0 shadow-elevated bg-gradient-feature rounded-2xl overflow-hidden ${
-                  index % 2 === 0 ? '' : ''
-                }`}>
-                  <CardContent className="p-0">
-                    <div className={`flex flex-col items-start p-6`}>
-                      {/* Icon Section */}
-                      <div className="flex-shrink-0 w-14 h-14 bg-primary rounded-full flex items-center justify-center">
-                        {React.isValidElement(value.icon)
-                          ? React.cloneElement(value.icon as React.ReactElement, { className: "text-primary-foreground", size: 24 })
-                          : value.icon}
-                      </div>
-                      
-                      {/* Content Section */}
-                      <div className="mt-4 w-full">
-                        <h3 className="text-xl font-bold text-foreground mb-2">
-                          {value.title}
-                        </h3>
-                        <p className="text-muted-foreground leading-relaxed">
-                          {value.description}
-                        </p>
-                      </div>
+                <Box 
+                  className="group hover:shadow-elevated transition-all duration-300 border-0 bg-gradient-feature h-full min-h-[260px]"
+                >
+                  <CardHeader className="text-center pb-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-14 lg:h-14 xl:w-16 xl:h-16 bg-primary rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                      {React.isValidElement(value.icon)
+                        ? React.cloneElement(value.icon as React.ReactElement, { className: "text-primary-foreground", size: 24 })
+                        : value.icon}
                     </div>
+                    <CardTitle className="text-lg sm:text-xl lg:text-lg xl:text-xl text-foreground leading-tight">{value.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <CardDescription className="text-center text-muted-foreground leading-relaxed text-sm sm:text-base">
+                      {value.description}
+                    </CardDescription>
                   </CardContent>
-                </Card>
+                </Box>
               </AnimateOnScroll>
             ))}
           </div>

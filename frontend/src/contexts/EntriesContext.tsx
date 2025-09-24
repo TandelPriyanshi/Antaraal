@@ -5,7 +5,7 @@ export interface Entry {
   id: string;
   title: string;
   content: string;
-  date: string;
+  date: string | Date; // Can be either string or Date object
   time: string;
   mood: string;
   tags: string[];
@@ -17,7 +17,7 @@ export interface Entry {
 interface EntriesContextType {
   entries: Entry[];
   addEntry: (entry: Omit<Entry, 'id' | 'createdAt'>) => Promise<void> | void;
-  getEntry: (id: string) => Entry | undefined;
+  getEntry: (id: string) => Promise<Entry | undefined>;
   updateEntry: (id: string, entry: Partial<Entry>) => Promise<void> | void;
   deleteEntry: (id: string) => Promise<void> | void;
 }
@@ -33,31 +33,56 @@ export const useEntries = () => {
 };
 
 // Map backend JournalEntry -> UI Entry
+type ApiTag = {
+  id: number;
+  tag_text: string;
+};
+
 type ApiEntry = {
   id: number;
   date: string; // ISO date or YYYY-MM-DD
   title: string;
   content: string;
   summary?: string | null;
-  mood?: string | null;
-  tags?: string[] | null;
+  feeling?: string | null; // Backend returns 'feeling', not 'mood'
+  tags?: ApiTag[] | null; // Add tags property
   createdAt: string;
   updatedAt: string;
 };
 
 const mapApiToEntry = (e: ApiEntry): Entry => {
-  const created = new Date(e.createdAt ?? e.date);
+  let created: Date;
+
+  if (e.date) {
+    // User selected date - parse YYYY-MM-DD format without timezone conversion
+    created = new Date(e.date + 'T12:00:00'); // Use noon to avoid timezone shifts
+  } else if (e.createdAt) {
+    // Fallback to createdAt timestamp if no selected date
+    created = new Date(e.createdAt);
+  } else {
+    created = new Date();
+  }
+
+  // Format the date without timezone conversion - just use the date as-is
+  const dateStr = created.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const timeStr = created.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+
   const wc = e.content?.split(/\s+/).filter(Boolean).length || 0;
-  const dateStr = created.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const timeStr = created.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   return {
     id: String(e.id),
     title: e.title,
     content: e.content,
     date: dateStr,
     time: timeStr,
-    mood: e.mood ?? 'Reflective',
-    tags: e.tags ?? [],
+    mood: e.feeling ?? 'Reflective',
+    tags: e.tags?.map(tag => tag.tag_text) ?? [],
     wordCount: wc,
     readTime: `${Math.max(1, Math.ceil(wc / 200))} min read`,
     createdAt: created,
@@ -73,7 +98,8 @@ export const EntriesProvider = ({ children }: { children: ReactNode }) => {
       try {
         const res = await api.get<{ data: ApiEntry[] }>(`/journal-entries`);
         if (res.data?.data) {
-          setEntries(res.data.data.map(mapApiToEntry));
+          const mappedEntries = res.data.data.map(mapApiToEntry);
+          setEntries(mappedEntries);
         } else if (res.error) {
           console.error('Failed to load entries:', res.error);
         }
@@ -87,14 +113,19 @@ export const EntriesProvider = ({ children }: { children: ReactNode }) => {
   const addEntry = async (entryData: Omit<Entry, 'id' | 'createdAt'>) => {
     try {
       // Persist to backend using minimal required fields
+      // Convert Date object to YYYY-MM-DD format to preserve the selected date
+      const dateObj = entryData.date instanceof Date ? entryData.date : new Date();
+      const formattedDate = dateObj.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+
       const payload = {
         title: entryData.title,
         content: entryData.content,
-        date: new Date().toISOString(),
+        date: formattedDate, // Use YYYY-MM-DD format instead of ISO string
         summary: null,
-        mood: entryData.mood,
+        feeling: entryData.mood,
         tags: entryData.tags,
       };
+
       const res = await api.post<{ data: ApiEntry }>(`/journal-entries`, payload);
       if (res.data?.data) {
         const mapped = mapApiToEntry(res.data.data);
@@ -102,12 +133,13 @@ export const EntriesProvider = ({ children }: { children: ReactNode }) => {
       } else {
         // Fallback: optimistic add if API not available
         const now = new Date();
+        const selectedDate = entryData.date instanceof Date ? entryData.date : now;
         const wc = entryData.content.split(/\s+/).filter(Boolean).length;
         const optimistic: Entry = {
           id: String(Date.now()),
           title: entryData.title,
           content: entryData.content,
-          date: now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+          date: selectedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
           time: now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
           mood: entryData.mood || 'Reflective',
           tags: entryData.tags || [],
@@ -122,8 +154,25 @@ export const EntriesProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const getEntry = (id: string) => {
-    return entries.find(entry => entry.id === id);
+  const getEntry = async (id: string): Promise<Entry | undefined> => {
+    // First check if we have it in local state
+    let entry = entries.find(entry => entry.id === id);
+
+    // If not found locally, try to fetch from API
+    if (!entry) {
+      try {
+        const res = await api.get<{ data: ApiEntry }>(`/journal-entries/${id}`);
+        if (res.data?.data) {
+          entry = mapApiToEntry(res.data.data);
+          // Add to local state
+          setEntries(prev => [entry!, ...prev]);
+        }
+      } catch (err) {
+        console.error('Get entry error:', err);
+      }
+    }
+
+    return entry;
   };
 
   const updateEntry = async (id: string, updatedData: Partial<Entry>) => {
@@ -131,13 +180,26 @@ export const EntriesProvider = ({ children }: { children: ReactNode }) => {
       const payload: any = {};
       if (updatedData.title !== undefined) payload.title = updatedData.title;
       if (updatedData.content !== undefined) payload.content = updatedData.content;
-      if (updatedData.date !== undefined) payload.date = new Date(updatedData.date).toISOString();
-      if (updatedData.mood !== undefined) payload.mood = updatedData.mood;
+      if (updatedData.date !== undefined) {
+        // Convert Date object to YYYY-MM-DD format to preserve the selected date
+        const dateObj = updatedData.date instanceof Date ? updatedData.date : new Date(updatedData.date);
+        payload.date = dateObj.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+      }
+      if (updatedData.mood !== undefined) payload.feeling = updatedData.mood; // Backend expects 'feeling'
       if (updatedData.tags !== undefined) payload.tags = updatedData.tags;
-      await api.put(`/journal-entries/${id}`, payload);
+
+      const res = await api.put<{ data: ApiEntry }>(`/journal-entries/${id}`, payload);
+      if (res.data?.data) {
+        // Update with the response from the server
+        const mapped = mapApiToEntry(res.data.data);
+        setEntries(prev => prev.map(e => (e.id === id ? mapped : e)));
+      } else {
+        // Optimistic update if API call fails
+        setEntries(prev => prev.map(e => (e.id === id ? { ...e, ...updatedData } : e)));
+      }
     } catch (err) {
       console.error('Update entry error:', err);
-    } finally {
+      // Still update locally for better UX
       setEntries(prev => prev.map(e => (e.id === id ? { ...e, ...updatedData } : e)));
     }
   };

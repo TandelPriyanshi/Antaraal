@@ -26,6 +26,7 @@ import PromptPage from "./pages/PromptPage";
 import StatsPage from "./pages/StatsPage";
 import NewEntry from "./pages/NewEntry";
 import { EntriesProvider } from "./contexts/EntriesContext";
+import ScrollManager from "./components/ScrollManager";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +96,7 @@ const App = () => (
           <EntriesProvider>
             <Toaster />
             <Sonner />
+            <ScrollManager />
             <AppContent />
           </EntriesProvider>
         </AuthProvider>

@@ -274,3 +274,14 @@
 {"database":"antaraal","host":"localhost","level":"info","message":"Database connection established successfully","port":5433,"service":"antaraal-backend","timestamp":"2025-09-24 22:50:36"}
 {"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-24 22:50:36"}
 {"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-24 22:50:36"}
+{"database":"antaraal","host":"localhost","level":"info","message":"Database connection established successfully","port":5433,"service":"antaraal-backend","timestamp":"2025-09-24 23:42:53"}
+{"database":"antaraal","host":"localhost","level":"info","message":"Database connection established successfully","port":5433,"service":"antaraal-backend","timestamp":"2025-09-24 23:43:34"}
+{"database":"antaraal","host":"localhost","level":"info","message":"Database connection established successfully","port":5433,"service":"antaraal-backend","timestamp":"2025-09-24 23:43:59"}
+{"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-24 23:43:59"}
+{"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-24 23:43:59"}
+{"database":"./database/antaraal.sqlite","level":"info","message":"Database connection established successfully","service":"antaraal-backend","timestamp":"2025-09-25 01:17:18"}
+{"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-25 01:17:18"}
+{"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-25 01:17:18"}
+{"database":"./database/antaraal.sqlite","level":"info","message":"Database connection established successfully","service":"antaraal-backend","timestamp":"2025-09-25 01:19:26"}
+{"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-25 01:19:26"}
+{"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-25 01:19:26"}

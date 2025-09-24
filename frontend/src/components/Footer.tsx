@@ -4,7 +4,7 @@ import { Mail, Phone, MapPin, Heart, BookOpen, Users, Shield } from 'lucide-reac
 
 const Footer = () => {
   return (
-    <footer id="contact" className="bg-primary text-primary-foreground py-12 sm:py-16 lg:py-20">
+    <footer id="contact" className="static bg-primary text-primary-foreground py-12 sm:py-16 lg:py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-6 xl:gap-8 mb-8 sm:mb-12">
           {/* Brand Section */}

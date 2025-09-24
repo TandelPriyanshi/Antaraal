@@ -13,9 +13,11 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">A</span>
-            </div>
+            <img
+              src="/favicon.ico"
+              alt="Antaraal logo"
+              className="w-8 h-8 rounded-lg"
+            />
             <span className="text-xl font-bold text-foreground">Antaraal</span>
           </Link>
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Calendar, Clock, Edit, Share, Bookmark, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useParams, useNavigate } from "react-router-dom";
-import { useEntries } from "@/contexts/EntriesContext";
+import { useEntries, Entry } from "@/contexts/EntriesContext";
 import { useToast } from "@/hooks/use-toast";
 
 const EntryDetail = () => {
@@ -14,10 +14,47 @@ const EntryDetail = () => {
   const navigate = useNavigate();
   const { getEntry, updateEntry } = useEntries();
   const { toast } = useToast();
-  
-  const entry = getEntry(id || '');
+  const [entry, setEntry] = useState<Entry | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [content, setContent] = useState(entry?.content || '');
+  const [content, setContent] = useState('');
+
+  useEffect(() => {
+    if (!id) {
+      navigate('/dashboard/entries');
+      return;
+    }
+
+    const loadEntry = async () => {
+      setIsLoading(true);
+      try {
+        const entryData = await getEntry(id);
+        if (entryData) {
+          setEntry(entryData);
+          setContent(entryData.content);
+        } else {
+          // Entry not found
+          setEntry(null);
+        }
+      } catch (error) {
+        console.error('Error loading entry:', error);
+        setEntry(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEntry();
+  }, [id, navigate, getEntry]);
+
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+        <p className="text-muted-foreground mt-4">Loading entry...</p>
+      </div>
+    );
+  }
 
   if (!entry) {
     return (

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, Filter, Calendar, Edit, Trash2, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Filter, Calendar, Edit, Trash2, Eye, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,10 @@ const EntriesList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { entries, deleteEntry } = useEntries();
   const navigate = useNavigate();
+
+  // Force refresh entries when component mounts
+  useEffect(() => {
+  }, []);
 
   const filteredEntries = entries.filter(entry =>
     entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -53,6 +57,15 @@ const EntriesList = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Your Entries</h1>
           <p className="text-muted-foreground mt-1">Browse and manage your journal entries</p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.location.reload()}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw size={16} />
+          Refresh
+        </Button>
       </div>
 
       {/* Search and Filter */}
@@ -146,7 +159,7 @@ const EntriesList = () => {
                       {entry.title}
                     </CardTitle>
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <span>{entry.date}</span>
+                      <span>{typeof entry.date === 'string' ? entry.date : entry.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                       <span>{entry.time}</span>
                       <span>{entry.readTime}</span>
                     </div>

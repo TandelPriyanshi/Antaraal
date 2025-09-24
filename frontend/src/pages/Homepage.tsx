@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, CheckCircle, Sparkles, Brain, Heart, Shield, Users, Zap, Mail, Phone, MapPin, BookOpen, Calendar, Edit3, Share2 } from "lucide-react";
@@ -7,6 +6,7 @@ import Footer from "@/components/Footer";
 import Navigation from "@/components/ui/navigation";
 import heroImage from "@/assets/hero-journal.jpg";
 import AnimateOnScroll from "@/components/ui/AnimateOnScroll";
+import { Box } from "@/components/ui/box";
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -135,7 +135,7 @@ const Homepage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-6 xl:gap-8 items-stretch">
             {features.map((feature, index) => (
               <AnimateOnScroll key={index} delay={index * 80}>
-                <Card 
+                <Box 
                   className="group hover:shadow-elevated transition-all duration-300 border-0 bg-gradient-feature h-full min-h-[260px]"
                 >
                   <CardHeader className="text-center pb-4">
@@ -149,7 +149,7 @@ const Homepage = () => {
                       {feature.description}
                     </CardDescription>
                   </CardContent>
-                </Card>
+                </Box>
               </AnimateOnScroll>
             ))}
           </div>

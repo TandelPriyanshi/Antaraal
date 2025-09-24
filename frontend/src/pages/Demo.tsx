@@ -5,7 +5,6 @@ import AnimateOnScroll from "@/components/ui/AnimateOnScroll";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-// import demoVideo from "@/assets/videos/antraal.mp4";
 
 const Demo = () => {
   return (
@@ -25,16 +24,16 @@ const Demo = () => {
             <Card className="border-0 shadow-elevated bg-card">
               <CardContent className="p-0">
                 <div className="relative w-full aspect-video bg-muted">
-                  {/* <video
+                  <video
                     className="w-full h-full object-cover"
-                    src={demoVideo}
+                    src="https://www.youtube.com/watch?v=your-video-id"
                     poster="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1920&auto=format&fit=crop"
                     controls
                     autoPlay
                     muted
                     playsInline
                     loop
-                  /> */}
+                  />
                 </div>
               </CardContent>
             </Card>
