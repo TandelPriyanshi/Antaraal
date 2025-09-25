@@ -46,10 +46,8 @@ const SignUp = () => {
       const result = await register(username, email, password);
       if (result.requiresVerification) {
         toast.success("Account created! Please check your email for verification code.");
-        // Navigation is handled by the auth context
       } else {
         toast.success("Account created successfully!");
-        // This shouldn't happen with our new flow, but keeping for compatibility
       }
     } catch (error) {
       console.error("Registration error:", error);

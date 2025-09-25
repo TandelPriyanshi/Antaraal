@@ -26,14 +26,14 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Add CORS middleware to allow frontend connections
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Temporarily disable CORS middleware to test
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],  # In production, specify actual origins
+#     allow_credentials=True,
+#     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+#     allow_headers=["*"],
+# )
 
 # Global model instances
 summarizer = None

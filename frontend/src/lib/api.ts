@@ -34,7 +34,7 @@ export interface IApi {
   auth: {
     login(credentials: { email: string; password: string }): Promise<ApiResponse<{ user: any; token: string }>>;
     register(userData: { username: string; email: string; password: string; pic_url?: string }): Promise<ApiResponse<{ userId: number; email: string; requiresVerification: boolean; message: string }>>;
-    verifyEmail(data: { userId: number; otp: string }): Promise<ApiResponse<{ user: any; token: string }>>;
+    verifyEmail(data: { userId: number; otp: string }): Promise<ApiResponse<{ user: any; token: string; redirectToSignIn: boolean; message: string }>>;
     resendOTP(data: { email: string }): Promise<ApiResponse<{ userId: number; message: string }>>;
     getCurrentUser(): Promise<ApiResponse<{ user: any }>>;
   };
@@ -80,7 +80,7 @@ const api: IApi = {
         body: JSON.stringify(data),
       });
 
-      return handleResponse<{ user: any; token: string }>(response);
+      return handleResponse<{ user: any; token: string; redirectToSignIn: boolean; message: string }>(response);
     },
 
     async resendOTP(data: { email: string }) {
