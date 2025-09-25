@@ -306,3 +306,6 @@
 {"database":"./database/antaraal.sqlite","level":"info","message":"Database connection established successfully","service":"antaraal-backend","timestamp":"2025-09-25 17:52:29"}
 {"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-25 17:52:29"}
 {"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-25 17:52:29"}
+{"database":"./database/antaraal.sqlite","level":"info","message":"Database connection established successfully","service":"antaraal-backend","timestamp":"2025-09-25 22:33:50"}
+{"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-25 22:33:50"}
+{"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-25 22:33:50"}
