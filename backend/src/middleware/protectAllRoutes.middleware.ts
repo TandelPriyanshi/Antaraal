@@ -5,6 +5,8 @@ import { auth } from './auth.middleware';
 const publicRoutes = [
   { path: '/api/auth/register', method: 'POST' },
   { path: '/api/auth/login', method: 'POST' },
+  { path: '/api/auth/verify-email', method: 'POST' },
+  { path: '/api/auth/resend-otp', method: 'POST' },
   { path: '/health', method: 'GET' },
 ];
 

@@ -14,6 +14,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import VerifyEmail from "./pages/VerifyEmail";
 import NotFound from "./pages/NotFound";
 import Terms from "./pages/Terms";
 import DashboardLayout from "./components/DashboardLayout";
@@ -46,6 +47,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/signin" replace />;
   }
 
+  if (!user.isEmailVerified) {
+    return <Navigate to={`/verify-email?userId=${user.id}&email=${encodeURIComponent(user.email)}`} replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -63,6 +68,7 @@ const AppContent = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           
           {/* Protected routes */}
           <Route

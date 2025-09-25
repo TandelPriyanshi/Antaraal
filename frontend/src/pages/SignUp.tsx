@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import AnimateOnScroll from "@/components/ui/AnimateOnScroll"; // ✅ Import animation wrapper
+import AnimateOnScroll from "@/components/ui/AnimateOnScroll";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,9 +43,14 @@ const SignUp = () => {
 
     setIsLoading(true);
     try {
-      await register(username, email, password);
-      toast.success("Account created successfully!");
-      navigate("/dashboard/reflections");
+      const result = await register(username, email, password);
+      if (result.requiresVerification) {
+        toast.success("Account created! Please check your email for verification code.");
+        // Navigation is handled by the auth context
+      } else {
+        toast.success("Account created successfully!");
+        // This shouldn't happen with our new flow, but keeping for compatibility
+      }
     } catch (error) {
       console.error("Registration error:", error);
       toast.error(
@@ -87,6 +92,14 @@ const SignUp = () => {
               <CardTitle className="text-xl sm:text-2xl lg:text-3xl text-center">
                 Create Account
               </CardTitle>
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-2">
+                  <Mail className="w-6 h-6 text-primary" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  We'll send you a verification code to confirm your email
+                </p>
+              </div>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-2 sm:space-y-3 px-0">

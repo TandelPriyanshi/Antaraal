@@ -29,18 +29,21 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     const decoded = jwt.verify(token, JWT_CONFIG.SECRET) as { id: string; email: string };
 
     // Get user from the token
-    const userRepository = Users.getRepository(AppDataSource);
-    const user = await userRepository.findOne({ where: { id: decoded.id } });
+    const userRepository = AppDataSource.getRepository(Users);
+    const user = await userRepository.findOne({ where: { id: parseInt(decoded.id) } });
 
     if (!user) {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    // Add user to request object
+    // Add user to request object (exclude sensitive data)
+    const { password, emailVerificationToken, emailVerificationExpires, createdAt, ...safeUser } = user;
     req.user = {
       id: user.id,
       email: user.email,
-      ...user
+      username: user.username,
+      isEmailVerified: user.isEmailVerified,
+      profilePic: user.profilePic
     };
     next();
   } catch (error) {

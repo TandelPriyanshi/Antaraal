@@ -9,7 +9,7 @@ interface ApiResponse<T = any> {
 // Helper function to handle responses
 const handleResponse = async <T,>(response: Response): Promise<ApiResponse<T>> => {
   const data = await response.json();
-  
+
   if (!response.ok) {
     return {
       error: data.message || 'Something went wrong',
@@ -33,7 +33,9 @@ const getAuthHeader = (): Record<string, string> => {
 export interface IApi {
   auth: {
     login(credentials: { email: string; password: string }): Promise<ApiResponse<{ user: any; token: string }>>;
-    register(userData: { username: string; email: string; password: string }): Promise<ApiResponse<{ user: any; token: string }>>;
+    register(userData: { username: string; email: string; password: string; pic_url?: string }): Promise<ApiResponse<{ userId: number; email: string; requiresVerification: boolean; message: string }>>;
+    verifyEmail(data: { userId: number; otp: string }): Promise<ApiResponse<{ user: any; token: string }>>;
+    resendOTP(data: { email: string }): Promise<ApiResponse<{ userId: number; message: string }>>;
     getCurrentUser(): Promise<ApiResponse<{ user: any }>>;
   };
   get<T>(endpoint: string): Promise<ApiResponse<T>>;
@@ -57,7 +59,7 @@ const api: IApi = {
       return handleResponse<{ user: any; token: string }>(response);
     },
 
-    async register(userData: { username: string; email: string; password: string }) {
+    async register(userData: { username: string; email: string; password: string; pic_url?: string }) {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
@@ -66,7 +68,31 @@ const api: IApi = {
         body: JSON.stringify(userData),
       });
 
+      return handleResponse<{ userId: number; email: string; requiresVerification: boolean; message: string }>(response);
+    },
+
+    async verifyEmail(data: { userId: number; otp: string }) {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
       return handleResponse<{ user: any; token: string }>(response);
+    },
+
+    async resendOTP(data: { email: string }) {
+      const response = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      return handleResponse<{ userId: number; message: string }>(response);
     },
 
     getCurrentUser() {

@@ -21,6 +21,15 @@ export class Users {
   @Column({ name: 'profile_pic', nullable: true, default: null })
   profilePic?: string;
 
+  @Column({ name: 'is_email_verified', default: false })
+  isEmailVerified!: boolean;
+
+  @Column({ name: 'email_verification_token', nullable: true })
+  emailVerificationToken?: string;
+
+  @Column({ name: 'email_verification_expires', nullable: true })
+  emailVerificationExpires?: Date;
+
   @OneToMany(() => JournalEntry, (journalEntry) => journalEntry.user)
   journalEntries: JournalEntry[];
 

@@ -6,6 +6,7 @@ interface User {
   id: string;
   email: string;
   username: string;
+  isEmailVerified?: boolean;
   // Add other user properties as needed
 }
 
@@ -14,7 +15,9 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string, picUrl?: string) => Promise<{ requiresVerification: boolean; userId?: number; email?: string }>;
+  verifyEmail: (userId: number, otp: string) => Promise<void>;
+  resendOTP: (email: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -80,16 +83,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (username: string, email: string, password: string) => {
+  const register = async (username: string, email: string, password: string, picUrl?: string) => {
     setIsLoading(true);
     try {
-      const response = await api.auth.register({ username, email, password });
+      const response = await api.auth.register({ username, email, password, pic_url: picUrl });
       if (response.data) {
-        const { user, token } = response.data;
-        localStorage.setItem('token', token);
-        setUser(user);
-        setToken(token);
-        navigate('/dashboard/reflections');
+        const { requiresVerification, userId, email: registeredEmail } = response.data;
+        if (requiresVerification) {
+          // Navigate to verification page with userId and email
+          navigate(`/verify-email?userId=${userId}&email=${encodeURIComponent(registeredEmail)}`);
+          return { requiresVerification: true, userId, email: registeredEmail };
+        } else {
+          // This shouldn't happen with our new flow, but keeping for compatibility
+          const { user, token } = response.data as any;
+          localStorage.setItem('token', token);
+          setUser(user);
+          setToken(token);
+          navigate('/dashboard/reflections');
+          return { requiresVerification: false };
+        }
       } else {
         throw new Error(response.error || 'Registration failed');
       }
@@ -101,11 +113,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const verifyEmail = async (userId: number, otp: string) => {
+    setIsLoading(true);
+    try {
+      const response = await api.auth.verifyEmail({ userId, otp });
+      if (response.data) {
+        const { user, token } = response.data;
+        localStorage.setItem('token', token);
+        setUser(user);
+        setToken(token);
+        navigate('/dashboard/reflections');
+      } else {
+        throw new Error(response.error || 'Email verification failed');
+      }
+    } catch (error) {
+      console.error('Email verification error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendOTP = async (email: string) => {
+    try {
+      const response = await api.auth.resendOTP({ email });
+      if (!response.data) {
+        throw new Error(response.error || 'Failed to resend OTP');
+      }
+    } catch (error) {
+      console.error('Resend OTP error:', error);
+      throw error;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
     setToken(null);
-    navigate('/login');
+    navigate('/signin');
   };
 
   const value = {
@@ -114,6 +159,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     login,
     register,
+    verifyEmail,
+    resendOTP,
     logout,
   };
 
