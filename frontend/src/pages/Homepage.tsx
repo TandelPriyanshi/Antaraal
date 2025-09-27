@@ -1,15 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, Sparkles, Brain, Heart, Shield, Users, Zap, Mail, Phone, MapPin, BookOpen, Calendar, Edit3, Share2 } from "lucide-react";
+import { ArrowRight, Sparkles, Brain, Shield, BookOpen, Calendar, Edit3, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/ui/navigation";
 import heroImage from "@/assets/hero-journal.jpg";
 import AnimateOnScroll from "@/components/ui/AnimateOnScroll";
 import { Box } from "@/components/ui/box";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Homepage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const features = [
     {
@@ -83,7 +85,7 @@ const Homepage = () => {
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                   <Button 
                     size="lg"
-                    onClick={() => navigate("/signup")}
+                    onClick={() => user ? navigate("/dashboard/reflections") : navigate("/signup")}
                     className="bg-gradient-hero text-primary-foreground hover:shadow-elevated transition-all w-full sm:w-auto"
                   >
                     Start Journaling
@@ -227,7 +229,7 @@ const Homepage = () => {
               </p>
               <Button 
                 size="lg"
-                onClick={() => navigate("/signup")}
+                onClick={() => user ? navigate("/dashboard/reflections") : navigate("/signup")}
                 className="bg-background text-foreground hover:bg-background/90 hover:shadow-glow transition-all w-full sm:w-auto text-sm sm:text-base"
               >
                 Start Your Free Journal

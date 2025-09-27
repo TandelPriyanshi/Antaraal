@@ -309,3 +309,12 @@
 {"database":"./database/antaraal.sqlite","level":"info","message":"Database connection established successfully","service":"antaraal-backend","timestamp":"2025-09-25 22:33:50"}
 {"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-25 22:33:50"}
 {"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-25 22:33:50"}
+{"database":"./database/antaraal.sqlite","level":"info","message":"Database connection established successfully","service":"antaraal-backend","timestamp":"2025-09-25 23:02:06"}
+{"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-25 23:02:06"}
+{"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-25 23:02:06"}
+{"database":"./database/antaraal.sqlite","level":"info","message":"Database connection established successfully","service":"antaraal-backend","timestamp":"2025-09-25 23:11:22"}
+{"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-25 23:11:22"}
+{"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-25 23:11:22"}
+{"database":"./database/antaraal.sqlite","level":"info","message":"Database connection established successfully","service":"antaraal-backend","timestamp":"2025-09-25 23:18:08"}
+{"level":"info","message":"✅ Connected to database","service":"antaraal-backend","timestamp":"2025-09-25 23:18:08"}
+{"level":"info","message":"🚀 Server is running on port 5002","service":"antaraal-backend","timestamp":"2025-09-25 23:18:08"}

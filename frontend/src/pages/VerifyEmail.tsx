@@ -1,34 +1,75 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Mail, RefreshCw } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import AnimateOnScroll from "@/components/ui/AnimateOnScroll";
 
 const VerifyEmail = () => {
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const userId = searchParams.get("userId");
   const email = searchParams.get("email");
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+
+    if (pastedData.length === 6) {
+      setOtp(pastedData.split(""));
+      inputRefs.current[5]?.focus();
+    }
+  };
+
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!otp || otp.length !== 6) {
+    const otpCode = otp.join("");
+
+    if (otpCode.length !== 6) {
       toast.error("Please enter a valid 6-digit code");
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await api.auth.verifyEmail({ userId: parseInt(userId!), otp });
+      const response = await api.auth.verifyEmail({ userId: parseInt(userId!), otp: otpCode });
 
       if (response.data) {
         const { redirectToSignIn, message } = response.data;
@@ -68,12 +109,15 @@ const VerifyEmail = () => {
       return;
     }
 
+    if (countdown > 0) return;
+
     setIsResending(true);
     try {
       const response = await api.auth.resendOTP({ email });
 
       if (response.data) {
         toast.success("Verification code sent successfully!");
+        setCountdown(60); // Start 60 second countdown
       } else {
         throw new Error(response.error || "Failed to resend OTP");
       }
@@ -106,7 +150,7 @@ const VerifyEmail = () => {
               </span>
             </div>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-              Verify your email to continue
+              Verify your email address
             </p>
           </div>
         </AnimateOnScroll>
@@ -118,78 +162,92 @@ const VerifyEmail = () => {
               <CardTitle className="text-xl sm:text-2xl lg:text-3xl text-center">
                 Email Verification
               </CardTitle>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-2">
-                  <Mail className="w-6 h-6 text-primary" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  We've sent a 6-digit verification code to
-                </p>
-                <p className="font-medium text-foreground">{email}</p>
-              </div>
+              <p className="text-center text-sm sm:text-base text-muted-foreground">
+                We've sent a 6-digit code to<br />
+                <span className="font-medium text-foreground">{email}</span>
+              </p>
             </CardHeader>
-
             <form onSubmit={handleVerify}>
-              <CardContent className="space-y-4 px-0">
+              <CardContent className="space-y-2 sm:space-y-3 px-0">
                 <div className="space-y-2">
-                  <Label htmlFor="otp" className="text-sm sm:text-base">
-                    Verification Code
+                  <Label className="text-sm sm:text-base text-center block">
+                    Enter verification code
                   </Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    placeholder="123456"
-                    required
-                    maxLength={6}
-                    className="text-center text-lg font-mono tracking-widest transition-all focus:shadow-soft h-12 sm:h-13 text-sm sm:text-base"
-                  />
-                  <p className="text-xs text-muted-foreground text-center">
+                  <div className="flex justify-center space-x-2 sm:space-x-3">
+                    {otp.map((digit, index) => (
+                      <Input
+                        key={index}
+                        ref={(el) => (inputRefs.current[index] = el)}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        onPaste={handlePaste}
+                        className="transition-all focus:shadow-soft h-10 sm:h-11 w-12 text-sm sm:text-base text-center"
+                        disabled={isLoading}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground text-center">
                     Enter the 6-digit code sent to your email
                   </p>
                 </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-hero text-primary-foreground hover:shadow-elevated transition-all h-10 sm:h-11 text-sm sm:text-base"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Verifying...
-                    </>
-                  ) : (
-                    "Verify Email"
-                  )}
-                </Button>
-
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Didn't receive the code?
-                  </p>
+              </CardContent>
+              <CardFooter className="px-0 pt-2 pb-4">
+                <div className="w-full space-y-3">
                   <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleResendOTP}
-                    disabled={isResending}
-                    className="text-sm"
+                    type="submit"
+                    className="w-full bg-gradient-hero text-primary-foreground hover:shadow-elevated transition-all h-10 sm:h-11 text-sm sm:text-base"
+                    disabled={isLoading || otp.join("").length !== 6}
                   >
-                    {isResending ? (
+                    {isLoading ? (
                       <>
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                        Sending...
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Verifying...
                       </>
                     ) : (
-                      <>
-                        <RefreshCw className="mr-2 h-3 w-3" />
-                        Resend Code
-                      </>
+                      "Verify Email"
                     )}
                   </Button>
+
+                  <div className="text-center space-y-2">
+                    <button
+                      type="button"
+                      onClick={handleResendOTP}
+                      disabled={isResending || countdown > 0}
+                      className="text-sm text-primary hover:text-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
+                    >
+                      {isResending ? (
+                        <>
+                          <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+                          Sending...
+                        </>
+                      ) : countdown > 0 ? (
+                        `Resend in ${countdown}s`
+                      ) : (
+                        <>
+                          <RefreshCw className="mr-2 h-3 w-3" />
+                          Resend Code
+                        </>
+                      )}
+                    </button>
+
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      Didn't receive the code?{" "}
+                      <button
+                        type="button"
+                        onClick={() => navigate("/signup")}
+                        className="text-primary hover:text-primary/80 transition-colors font-medium"
+                      >
+                        Try different email
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
+              </CardFooter>
             </form>
           </Card>
         </AnimateOnScroll>
@@ -198,10 +256,14 @@ const VerifyEmail = () => {
         <AnimateOnScroll direction="up" offset={20} delay={300}>
           <div className="mt-4 sm:mt-6 text-center">
             <button
-              onClick={() => navigate("/signup")}
-              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => navigate("/")}
+              className="inline-flex items-center text-xs sm:text-sm text-primary hover:bg-primary/10 py-2 px-3 rounded-md transition-colors"
             >
-              ← Back to Sign Up
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              Back to Home
             </button>
           </div>
         </AnimateOnScroll>
