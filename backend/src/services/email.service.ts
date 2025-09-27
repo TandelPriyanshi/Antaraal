@@ -1,15 +1,27 @@
 import * as nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import { config } from 'dotenv';
 
 config();
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
+// Initialize SendGrid
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
+}
+
+// Gmail transporter (fallback)
+const gmailTransporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  tls: {
+    ciphers: 'SSLv3',
+    rejectUnauthorized: false
+  }
 });
 
 export interface EmailOptions {
@@ -21,6 +33,44 @@ export interface EmailOptions {
 
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   try {
+    console.log('🔄 Attempting to send email to:', options.to);
+    console.log('📧 SendGrid API Key:', process.env.SENDGRID_API_KEY ? 'Set' : 'Not set');
+    console.log('📧 Gmail credentials:', process.env.EMAIL_USER ? 'Set' : 'Not set');
+
+    // Try SendGrid first (if API key is available)
+    if (process.env.SENDGRID_API_KEY) {
+      try {
+        console.log('📤 Trying SendGrid...');
+
+        const msg = {
+          to: options.to,
+          from: process.env.EMAIL_USER || 'noreply@antaraal.com',
+          subject: options.subject,
+          html: options.html,
+          text: options.text,
+        };
+
+        await sgMail.send(msg);
+        console.log(`✅ Email sent successfully via SendGrid to ${options.to}`);
+        return;
+      } catch (sendGridError) {
+        console.error('❌ SendGrid failed:', sendGridError);
+        console.log('🔄 Falling back to Gmail...');
+      }
+    }
+
+    // Fallback to Gmail
+    console.log('📤 Trying Gmail SMTP...');
+
+    // Verify Gmail connection
+    try {
+      await gmailTransporter.verify();
+      console.log('✅ Gmail SMTP connection verified');
+    } catch (verifyError) {
+      console.error('❌ Gmail SMTP connection failed:', verifyError);
+      throw new Error(`Gmail SMTP connection failed: ${verifyError}`);
+    }
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: options.to,
@@ -29,11 +79,25 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
       text: options.text,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Email sent successfully to ${options.to}`);
-  } catch (error) {
-    console.error('Error sending email:', error);
-    throw new Error('Failed to send email');
+    const result = await gmailTransporter.sendMail(mailOptions);
+    console.log(`✅ Email sent successfully via Gmail! Message ID: ${result.messageId}`);
+
+  } catch (error: any) {
+    console.error('❌ Final email error:', {
+      message: error.message,
+      code: error.code,
+      response: error.response,
+      command: error.command
+    });
+
+    // Provide specific error messages
+    if (error.code === 'EAUTH') {
+      throw new Error('❌ AUTHENTICATION FAILED! Check your Gmail app password or SendGrid API key.');
+    } else if (error.code === 'ECONNECTION') {
+      throw new Error('❌ CONNECTION FAILED! Check your internet connection and firewall settings.');
+    } else {
+      throw new Error(`❌ EMAIL FAILED: ${error.message}`);
+    }
   }
 };
 

@@ -15,4 +15,10 @@ router.get('/me', auth, (req, res) => {
   res.json({ user: req.user });
 });
 
+// Debug route to test middleware
+router.post('/debug-resend-otp', (req, res) => {
+  console.log('Debug route hit:', req.path, req.method);
+  res.json({ message: 'Debug endpoint working' });
+});
+
 export default router;

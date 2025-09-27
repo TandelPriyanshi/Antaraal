@@ -17,9 +17,11 @@ const publicRoutes = [
 export const protectAllRoutes = (req: Request, res: Response, next: NextFunction) => {
   // Check if the current route is in the public routes list
   const isPublicRoute = publicRoutes.some(
-    (route) => 
-      req.path.startsWith(route.path) && 
-      req.method === route.method
+    (route) => {
+      const pathMatch = req.path === route.path;
+      const methodMatch = req.method === route.method;
+      return pathMatch && methodMatch;
+    }
   );
 
   // If it's a public route, skip authentication
