@@ -38,9 +38,17 @@ const SignIn = () => {
     setIsLoading(true);
     try {
       await login(email, password);
+      // If we reach here without error, login was successful
       toast.success("Logged in successfully!");
       navigate("/dashboard/reflections");
     } catch (error) {
+      // Don't show error for verification required (AuthContext already navigated)
+      if (error instanceof Error && error.message === 'VERIFICATION_REQUIRED') {
+        console.log('SignIn: Verification required, AuthContext handled navigation');
+        return;
+      }
+
+      // Show error for other cases
       toast.error(error instanceof Error ? error.message : "Failed to sign in. Please try again.");
     } finally {
       setIsLoading(false);

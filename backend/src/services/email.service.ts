@@ -6,23 +6,40 @@ config();
 
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
-// Gmail transporter (fallback)
-const gmailTransporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    ciphers: 'SSLv3',
-    rejectUnauthorized: false
+// Create Gmail transporter (will be initialized when needed)
+let gmailTransporter: nodemailer.Transporter | null = null;
+const createGmailTransporter = () => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    return null;
   }
-});
+
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.EMAIL_PORT || '587'),
+    secure: false, // false for port 587, true for 465
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    connectionTimeout: 30000, // 30 seconds
+    greetingTimeout: 15000,    // 15 seconds
+    socketTimeout: 60000,     // 60 seconds
+    logger: true,
+    debug: true,
+    tls: {
+      rejectUnauthorized: false,
+      ciphers: 'SSLv3'
+    },
+    pool: true, // Use connection pool
+    maxConnections: 1,
+    maxMessages: 1
+  });
+};
+
+gmailTransporter = createGmailTransporter();
 
 export interface EmailOptions {
   to: string;
@@ -30,79 +47,114 @@ export interface EmailOptions {
   html: string;
   text?: string;
 }
+export const sendEmail = async (options: EmailOptions): Promise<{ success: boolean; message: string; service: string }> => {
+  const log = (message: string, data?: any) => {
+    console.log(`[${new Date().toISOString()}] ${message}`, data || '');
+  };
 
-export const sendEmail = async (options: EmailOptions): Promise<void> => {
-  try {
-    console.log('🔄 Attempting to send email to:', options.to);
-    console.log('📧 SendGrid API Key:', process.env.SENDGRID_API_KEY ? 'Set' : 'Not set');
-    console.log('📧 Gmail credentials:', process.env.EMAIL_USER ? 'Set' : 'Not set');
+  // DEVELOPMENT MODE: Show OTP in console for testing
+  if (process.env.NODE_ENV === 'development') {
+    console.log('='.repeat(50));
+    console.log('🚨 DEVELOPMENT MODE - OTP FOR TESTING');
+    console.log(`📧 To: ${options.to}`);
+    console.log(`🔑 OTP: ${options.text?.match(/OTP: (\d+)/)?.[1] || 'Check email content'}`);
+    console.log('='.repeat(50));
+  }
 
-    // Try SendGrid first (if API key is available)
-    if (process.env.SENDGRID_API_KEY) {
-      try {
-        console.log('📤 Trying SendGrid...');
-
-        const msg = {
-          to: options.to,
-          from: process.env.EMAIL_USER || 'noreply@antaraal.com',
-          subject: options.subject,
-          html: options.html,
-          text: options.text,
-        };
-
-        await sgMail.send(msg);
-        console.log(`✅ Email sent successfully via SendGrid to ${options.to}`);
-        return;
-      } catch (sendGridError) {
-        console.error('❌ SendGrid failed:', sendGridError);
-        console.log('🔄 Falling back to Gmail...');
-      }
-    }
-
-    // Fallback to Gmail
-    console.log('📤 Trying Gmail SMTP...');
-
-    // Verify Gmail connection
+  // Try SendGrid first if API key is available
+  if (process.env.SENDGRID_API_KEY) {
     try {
-      await gmailTransporter.verify();
-      console.log('✅ Gmail SMTP connection verified');
-    } catch (verifyError) {
-      console.error('❌ Gmail SMTP connection failed:', verifyError);
-      throw new Error(`Gmail SMTP connection failed: ${verifyError}`);
+      log('📤 Attempting to send email via SendGrid...', { to: options.to });
+
+      const msg = {
+        to: options.to,
+        from: process.env.SENDGRID_FROM_EMAIL || 'apikey@sendgrid.net',
+        subject: options.subject,
+        html: options.html,
+        text: options.text || options.subject,
+      };
+      await sgMail.send(msg);
+      log('✅ Email sent successfully via SendGrid');
+      return { success: true, message: 'Email sent successfully', service: 'SendGrid' };
+
+    } catch (error: any) {
+      log('❌ SendGrid failed', {
+        error: error?.message,
+        code: error?.code,
+        response: error?.response?.body?.errors,
+        stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      });
+      // Don't throw error, continue to Gmail fallback
     }
+  }
+
+  try {
+    log('📤 Attempting to send email via Gmail SMTP...', { to: options.to });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Antaraal" <${process.env.EMAIL_USER}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,
-      text: options.text,
+      text: options.text || options.subject,
     };
 
-    const result = await gmailTransporter.sendMail(mailOptions);
-    console.log(`✅ Email sent successfully via Gmail! Message ID: ${result.messageId}`);
-
-  } catch (error: any) {
-    console.error('❌ Final email error:', {
-      message: error.message,
-      code: error.code,
-      response: error.response,
-      command: error.command
+    // Send the email with a timeout
+    const sendPromise = new Promise<nodemailer.SentMessageInfo>((resolve, reject) => {
+      if (!gmailTransporter) {
+        return reject(new Error('Gmail transporter is not available'));
+      }
+      gmailTransporter.sendMail(mailOptions, (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      });
     });
 
-    // Provide specific error messages
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('SMTP connection timeout')), 60000)
+    );
+
+    const result = await Promise.race([sendPromise, timeoutPromise]) as nodemailer.SentMessageInfo;
+
+    log('✅ Email sent successfully via Gmail SMTP', {
+      messageId: result.messageId,
+      accepted: result.accepted,
+      rejected: result.rejected
+    });
+
+    return {
+      success: true,
+      message: 'Email sent successfully',
+      service: 'Gmail SMTP'
+    };
+
+  } catch (error: any) {
+    log('❌ Gmail SMTP failed', {
+      error: error?.message,
+      code: error?.code,
+      command: error?.command,
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+    });
+
     if (error.code === 'EAUTH') {
-      throw new Error('❌ AUTHENTICATION FAILED! Check your Gmail app password or SendGrid API key.');
+      throw new Error('Authentication failed. Please check your email credentials.');
     } else if (error.code === 'ECONNECTION') {
-      throw new Error('❌ CONNECTION FAILED! Check your internet connection and firewall settings.');
+      throw new Error('Connection to email server failed. Please check your internet connection.');
     } else {
-      throw new Error(`❌ EMAIL FAILED: ${error.message}`);
+      throw new Error(`Failed to send email: ${error.message}`);
     }
   }
+
+  // If we reach here, both SendGrid and Gmail failed
+  const fallbackError = '❌ Both SendGrid and Gmail SMTP failed to send email. Please check your email configuration.';
+  log(fallbackError);
+  throw new Error(fallbackError);
 };
 
 export const generateOTP = (): string => {
-  // Generate a 6-digit OTP
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 

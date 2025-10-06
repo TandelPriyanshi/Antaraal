@@ -32,10 +32,10 @@ const getAuthHeader = (): Record<string, string> => {
 // Define the API interface
 export interface IApi {
   auth: {
-    login(credentials: { email: string; password: string }): Promise<ApiResponse<{ user: any; token: string }>>;
+    login(credentials: { email: string; password: string }): Promise<ApiResponse<{ user: any; token: string } | { requiresVerification: boolean; userId: number; email: string; message: string }>>;
     register(userData: { username: string; email: string; password: string; pic_url?: string }): Promise<ApiResponse<{ userId: number; email: string; requiresVerification: boolean; message: string }>>;
     verifyEmail(data: { userId: number; otp: string }): Promise<ApiResponse<{ user: any; token: string; redirectToSignIn: boolean; message: string }>>;
-    resendOTP(data: { email: string }): Promise<ApiResponse<{ userId: number; message: string }>>;
+    resendOTP(data: { email: string }): Promise<ApiResponse<{ userId: number; message: string; emailSent?: boolean }>>;
     getCurrentUser(): Promise<ApiResponse<{ user: any }>>;
   };
   get<T>(endpoint: string): Promise<ApiResponse<T>>;
@@ -55,6 +55,22 @@ const api: IApi = {
         },
         body: JSON.stringify(credentials),
       });
+
+      // Handle both successful login and email verification required cases
+      if (response.status === 401) {
+        const data = await response.json();
+        if (data && data.requiresVerification === true) {
+          return {
+            data: {
+              requiresVerification: true,
+              userId: data.userId,
+              email: data.email,
+              message: data.message
+            }
+          };
+        }
+        return { error: data.message || 'Authentication failed' };
+      }
 
       return handleResponse<{ user: any; token: string }>(response);
     },

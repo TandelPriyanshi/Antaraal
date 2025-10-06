@@ -67,7 +67,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await api.auth.login({ email, password });
       if (response.data) {
-        const { user, token } = response.data;
+        // Check if the response indicates email verification is required
+        if ('requiresVerification' in response.data && response.data.requiresVerification) {
+          // Set a flag in localStorage to indicate verification is required
+          localStorage.setItem('verificationRequired', 'true');
+          localStorage.setItem('verificationUserId', response.data.userId.toString());
+          localStorage.setItem('verificationEmail', response.data.email);
+
+          // Navigate to verification page with userId and email
+          navigate(`/verify-email?userId=${response.data.userId}&email=${encodeURIComponent(response.data.email)}&fromSignIn=true`);
+
+          // Throw a specific error to prevent SignIn from showing success
+          throw new Error('VERIFICATION_REQUIRED');
+        }
+
+        // Normal successful login
+        const { user, token } = response.data as { user: User; token: string };
         localStorage.setItem('token', token);
         setUser(user);
         setToken(token);
@@ -76,7 +91,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(response.error || 'Login failed');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      // Clean up verification flags if this isn't a verification error
+      if (error.message !== 'VERIFICATION_REQUIRED') {
+        localStorage.removeItem('verificationRequired');
+        localStorage.removeItem('verificationUserId');
+        localStorage.removeItem('verificationEmail');
+      }
       throw error;
     } finally {
       setIsLoading(false);

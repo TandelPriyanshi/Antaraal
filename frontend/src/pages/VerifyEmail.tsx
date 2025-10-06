@@ -116,18 +116,33 @@ const VerifyEmail = () => {
       const response = await api.auth.resendOTP({ email });
 
       if (response.data) {
-        toast.success("Verification code sent successfully!");
+        // Check if email was actually sent
+        if (response.data.emailSent === false) {
+          toast.warning(response.data.message || "We've updated your verification code, but had trouble sending the email. Please try again later.");
+        } else {
+          toast.success(response.data.message || "Verification code sent successfully!");
+        }
         setCountdown(60); // Start 60 second countdown
       } else {
+        // If we get here, it means the API returned an error
         throw new Error(response.error || "Failed to resend OTP");
       }
     } catch (error) {
       console.error("Resend OTP error:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to resend verification code. Please try again."
-      );
+      // Check for specific error status codes
+      if (error.response?.status === 400) {
+        toast.error("Email is already verified. Please sign in.");
+        navigate("/signin", { state: { email } });
+      } else if (error.response?.status === 404) {
+        toast.error("User not found. Please register again.");
+        navigate("/signup");
+      } else {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to resend verification code. Please try again."
+        );
+      }
     } finally {
       setIsResending(false);
     }
