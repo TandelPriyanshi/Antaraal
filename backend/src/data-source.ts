@@ -5,6 +5,8 @@ import { JournalEntry } from './entities/Journal.entity';
 import { config } from './config/config';
 import logger from './utils/logger';
 import { Tags } from './entities/Tags.entity';
+import { Conversation } from './entities/Conversation.entity';
+import { Photo } from './entities/photo.entity';
 
 export const AppDataSource = new DataSource({
   type: 'sqlite',
@@ -12,7 +14,7 @@ export const AppDataSource = new DataSource({
   synchronize: config.server.env === 'development',
   logging: config.server.env === 'development' ? 'all' : ['error'],
   logger: config.server.env === 'development' ? 'advanced-console' : 'file',
-  entities: [Users, JournalEntry, Tags],
+  entities: [Users, JournalEntry, Tags, Conversation, Photo ],
   migrations: [],
   subscribers: [],
 });

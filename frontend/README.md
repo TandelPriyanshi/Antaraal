@@ -1,73 +1,40 @@
-# Welcome to your Lovable project
+# 🌐 Frontend - Antaraal
 
-## Project info
+Antaraal Frontend is the user-facing web interface for the **Antaraal Project**, a platform designed to capture, reflect, and express human stories through journaling and NLP-driven insights.  
+It provides a clean, responsive, and interactive experience built with modern web technologies.
 
-**URL**: https://lovable.dev/projects/038263ab-4255-436d-ae5d-b0f543e40988
+---
 
-## How can I edit this code?
+## 🚀 Features
 
-There are several ways of editing your application.
+- 📝 **Dynamic Journaling Interface** – Users can create, edit, and manage journal entries.
+- 🤖 **NLP Integration** – Connects to the backend NLP model for tone and emotion analysis.
+- 🎨 **Modern UI** – Built with React + Tailwind CSS for a smooth and responsive layout.
+- 🔐 **Authentication System** – Secure login and registration using JWT.
+- 🧠 **Smart Suggestions** – Context-aware prompts and story-building features.
+- ☁️ **API Integration** – Seamlessly connects with backend REST APIs.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/038263ab-4255-436d-ae5d-b0f543e40988) and start prompting.
+## 🛠️ Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+| Layer | Technology |
+|-------|-------------|
+| **Frontend Framework** | React.js (Vite or CRA) |
+| **Styling** | Tailwind CSS |
+| **Routing** | React Router |
+| **State Management** | Context API / Redux |
+| **API Handling** | Axios / Fetch |
+| **Icons & Components** | Lucide React, ShadCN/UI |
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## ⚙️ Installation & Setup
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/TandelPriyanshi/antaraal.git
+cd frontend
 ```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/038263ab-4255-436d-ae5d-b0f543e40988) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)

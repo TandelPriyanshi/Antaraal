@@ -18,7 +18,6 @@ import VerifyEmail from "./pages/VerifyEmail";
 import NotFound from "./pages/NotFound";
 import Terms from "./pages/Terms";
 import DashboardLayout from "./components/DashboardLayout";
-import DailyReflections from "./pages/DailyReflections";
 import EntryDetail from "./pages/EntryDetail";
 import EntriesList from "./pages/EntriesList";
 import InspirationPage from "./pages/InspirationPage";
@@ -26,6 +25,8 @@ import PromptDetail from "./pages/PromptDetail";
 import PromptPage from "./pages/PromptPage";
 import StatsPage from "./pages/StatsPage";
 import NewEntry from "./pages/NewEntry";
+import AlbumList from "./pages/AlbumsList";
+import AlbumDetail from "./pages/AlbumDetails";
 import { EntriesProvider } from "./contexts/EntriesContext";
 import ScrollManager from "./components/ScrollManager";
 
@@ -79,14 +80,15 @@ const AppContent = () => (
               </ProtectedRoute>
             }
           >
-            <Route path="reflections" element={<DailyReflections />} />
-            <Route path="entries" element={<EntriesList />} />
             <Route path="entries/:id" element={<EntryDetail />} />
+            <Route path="entries" element={<EntriesList />} />
             <Route path="inspiration" element={<InspirationPage />} />
             <Route path="prompts" element={<PromptPage />} />
             <Route path="prompt-detail" element={<PromptDetail />} />
             <Route path="stats" element={<StatsPage />} />
             <Route path="new-entry" element={<NewEntry />} />
+            <Route path="albums" element={<AlbumList />} />
+            <Route path="albums/:id" element={<AlbumDetail />} />
           </Route>
           
           {/* Catch-all route */}

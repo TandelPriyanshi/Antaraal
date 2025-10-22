@@ -86,7 +86,7 @@ const VerifyEmail = () => {
         } else {
           // Fallback to dashboard if no redirectToSignIn flag
           toast.success("Email verified successfully!");
-          navigate("/dashboard/reflections");
+          navigate("/dashboard/entries");
         }
       } else {
         throw new Error(response.error || "Verification failed");

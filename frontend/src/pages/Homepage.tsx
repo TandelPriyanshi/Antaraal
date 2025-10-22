@@ -82,24 +82,26 @@ const Homepage = () => {
                 </p>
               </AnimateOnScroll>
               <AnimateOnScroll delay={200}>
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-                  <Button 
-                    size="lg"
-                    onClick={() => user ? navigate("/dashboard/reflections") : navigate("/signup")}
-                    className="bg-gradient-hero text-primary-foreground hover:shadow-elevated transition-all w-full sm:w-auto"
-                  >
-                    Start Journaling
-                    <ArrowRight className="ml-2" size={18} />
-                  </Button>
-                  <Button 
-                    size="lg"
-                    variant="outline"
-                    onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all w-full sm:w-auto"
-                  >
-                    Explore Features
-                  </Button>
-                </div>
+                {!user && (
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
+                    <Button 
+                      size="lg"
+                      onClick={() => navigate("/signup")}
+                      className="bg-gradient-hero text-primary-foreground hover:shadow-elevated transition-all w-full sm:w-auto"
+                    >
+                      Start Journaling
+                      <ArrowRight className="ml-2" size={18} />
+                    </Button>
+                    <Button 
+                      size="lg"
+                      variant="outline"
+                      onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all w-full sm:w-auto"
+                    >
+                      Explore Features
+                    </Button>
+                  </div>
+                )}
               </AnimateOnScroll>
             </div>
             <div className="relative mt-8 lg:mt-0">
@@ -217,28 +219,30 @@ const Homepage = () => {
       </section>
 
       {/* CTA Banner */}
-      <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-          <AnimateOnScroll>
-            <Card className="bg-gradient-hero text-center p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20 border-0 rounded-2xl sm:rounded-3xl">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-foreground mb-4 sm:mb-6 leading-tight">
-                Ready to start your journey?
-              </h2>
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-primary-foreground/90 mb-6 sm:mb-8 max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto px-4">
-                Join thousands of people who are already capturing their life stories with Antaraal.
-              </p>
-              <Button 
-                size="lg"
-                onClick={() => user ? navigate("/dashboard/reflections") : navigate("/signup")}
-                className="bg-background text-foreground hover:bg-background/90 hover:shadow-glow transition-all w-full sm:w-auto text-sm sm:text-base"
-              >
-                Start Your Free Journal
-                <ArrowRight className="ml-2" size={18} />
-              </Button>
-            </Card>
-          </AnimateOnScroll>
-        </div>
-      </section>
+      {!user && (
+        <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+            <AnimateOnScroll>
+              <Card className="bg-gradient-hero text-center p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20 border-0 rounded-2xl sm:rounded-3xl">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-foreground mb-4 sm:mb-6 leading-tight">
+                  Ready to start your journey?
+                </h2>
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-primary-foreground/90 mb-6 sm:mb-8 max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto px-4">
+                  Join thousands of people who are already capturing their life stories with Antaraal.
+                </p>
+                <Button 
+                  size="lg"
+                  onClick={() => navigate("/signup")}
+                  className="bg-background text-foreground hover:bg-background/90 hover:shadow-glow transition-all w-full sm:w-auto text-sm sm:text-base"
+                >
+                  Start Your Free Journal
+                  <ArrowRight className="ml-2" size={18} />
+                </Button>
+              </Card>
+            </AnimateOnScroll>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>

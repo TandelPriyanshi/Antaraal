@@ -1,184 +1,181 @@
-import { useState } from "react";
-import { Lightbulb, Search, Filter, Shuffle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Mic, Send, BookOpen, History, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import StatsCard from "@/components/StatsCard";
-import PromptCard from "@/components/PromptCard";
-import { Clock, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import api from "@/lib/api";
+
+interface ConversationItem {
+  id: number;
+  userMessage: string;
+  aiResponse: string;
+  createdAt: string;
+}
 
 const PromptPage = () => {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [inputText, setInputText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState<string>("");
 
-  const prompts = {
-    daily: [
-      {
-        id: 1,
-        title: "Morning Gratitude",
-        question: "What are three things you're grateful for today, and why?",
-        category: "Gratitude",
-        difficulty: "Easy",
-        estimatedTime: "5-10 min",
-        tags: ["gratitude", "morning", "positive"]
-      },
-      {
-        id: 2,
-        title: "Today's Intention",
-        question: "What do you want to focus on today, and how will you make it happen?",
-        category: "Planning",
-        difficulty: "Easy", 
-        estimatedTime: "5-10 min",
-        tags: ["intention", "goals", "planning"]
-      }
-    ],
-    reflection: [
-      {
-        id: 3,
-        title: "Personal Growth",
-        question: "Think about a challenge you faced recently. How did you handle it, and what did you learn?",
-        category: "Self-Discovery",
-        difficulty: "Medium",
-        estimatedTime: "15-20 min",
-        tags: ["growth", "challenges", "learning"]
-      },
-      {
-        id: 4,
-        title: "Values Exploration",
-        question: "What values are most important to you, and how do they show up in your daily life?",
-        category: "Self-Discovery",
-        difficulty: "Deep",
-        estimatedTime: "20-30 min",
-        tags: ["values", "identity", "beliefs"]
-      }
-    ],
-    creative: [
-      {
-        id: 5,
-        title: "Future Self Letter",
-        question: "Write a letter to yourself one year from now. What would you want them to know?",
-        category: "Future Visioning",
-        difficulty: "Medium",
-        estimatedTime: "15-25 min",
-        tags: ["future", "goals", "advice"]
-      },
-      {
-        id: 6,
-        title: "Perfect Day",
-        question: "Describe your perfect day from start to finish. What makes it perfect?",
-        category: "Visualization",
-        difficulty: "Easy",
-        estimatedTime: "10-15 min",
-        tags: ["dreams", "lifestyle", "happiness"]
-      }
-    ]
-  };
+  const handleSendPrompt = async () => {
+    if (!inputText.trim() || isLoading) return;
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Easy": return "bg-green-100 text-green-800 border-green-200";
-      case "Medium": return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Deep": return "bg-purple-100 text-purple-800 border-purple-200";
-      default: return "bg-gray-100 text-gray-800 border-gray-200";
+    const userMessage = inputText;
+    setInputText("");
+    setIsLoading(true);
+    setAiResponse("");
+
+    try {
+      const response = await api.post<{ message: string; id: number; createdAt: string }>('/ai/prompt', {
+        message: userMessage,
+      });
+
+      if (response.data) {
+        setAiResponse(response.data.message);
+        // Trigger custom event to update history in DashboardLayout
+        window.dispatchEvent(new CustomEvent('conversationUpdated'));
+      } else if (response.error) {
+        setAiResponse(`Error: ${response.error}`);
+      }
+    } catch (error) {
+      console.error('Error sending prompt:', error);
+      setAiResponse('Sorry, I encountered an error processing your request. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleStartWriting = (promptId: number) => {
-    navigate('/dashboard/prompt-detail', { state: { promptId } });
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendPrompt();
+    }
   };
 
+  // Listen for conversation loading from menu
+  useEffect(() => {
+    const handleLoadConversation = (event: CustomEvent) => {
+      const conv = event.detail as ConversationItem;
+      setInputText(conv.userMessage);
+      setAiResponse(conv.aiResponse);
+    };
+
+    const handleNewChat = () => {
+      setInputText("");
+      setAiResponse("");
+    };
+
+    window.addEventListener('loadConversation', handleLoadConversation as EventListener);
+    window.addEventListener('newChat', handleNewChat);
+
+    return () => {
+      window.removeEventListener('loadConversation', handleLoadConversation as EventListener);
+      window.removeEventListener('newChat', handleNewChat);
+    };
+  }, []);
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Writing Prompts</h1>
-          <p className="text-muted-foreground mt-1">Discover thought-provoking prompts to inspire your journaling</p>
-        </div>
-      </div>
+    <div className="flex flex-col h-full items-center justify-center px-4 pb-8">
+      <div className="w-full max-w-3xl mx-auto space-y-8">
+        {/* Main Heading - Only show when no response */}
+        {!aiResponse && !isLoading && (
+          <div className="text-center animate-fade-in">
+            <h1 className="text-4xl md:text-5xl font-light text-foreground">
+            Where should we begin?
+            </h1>
+          </div>
+        )}
 
-      {/* Search */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search prompts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
+        {/* AI Response Display */}
+        {(aiResponse || isLoading) && (
+          <div className="bg-card rounded-2xl border border-border p-6 shadow-lg max-h-[400px] overflow-y-auto">
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-3 text-muted-foreground">
+                <Loader2 className="animate-spin" size={20} />
+                <span>Thinking...</span>
+              </div>
+            ) : (
+              <div className="prose prose-sm max-w-none text-foreground">
+                <p className="whitespace-pre-wrap">{aiResponse}</p>
+              </div>
+            )}
+          </div>
+        )}
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatsCard 
-          icon={<Lightbulb size={20} className="text-primary" />}
-          label="Total Prompts"
-          value="124"
-        />
-        <StatsCard 
-          icon={<Clock size={20} className="text-primary" />}
-          label="Completed"
-          value="23"
-        />
-        <StatsCard 
-          icon={<ArrowRight size={20} className="text-primary" />}
-          label="In Progress"
-          value="2"
-        />
-      </div>
-
-      {/* Daily Prompts */}
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Daily Prompts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {prompts.daily.map((prompt) => (
-              <PromptCard 
-                key={prompt.id} 
-                prompt={prompt} 
-                getDifficultyColor={getDifficultyColor}
-                onStartWriting={handleStartWriting}
+        {/* Input Area */}
+        <div className="relative">
+          <div className="bg-card rounded-3xl border border-border shadow-lg overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4">
+              <Input
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask anything"
+                disabled={isLoading}
+                className="flex-1 bg-transparent border-0 text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
               />
-            ))}
+              
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button 
+                  size="icon"
+                  variant="ghost" 
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-full h-9 w-9"
+                >
+                  <Mic size={18} />
+                </Button>
+                
+                <Button 
+                  onClick={handleSendPrompt}
+                  disabled={!inputText.trim() || isLoading}
+                  size="icon"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground rounded-full h-9 w-9"
+                >
+                  {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Deep Reflection</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {prompts.reflection.map((prompt) => (
-              <PromptCard 
-                key={prompt.id} 
-                prompt={prompt} 
-                getDifficultyColor={getDifficultyColor}
-                onStartWriting={handleStartWriting}
-              />
-            ))}
+        {/* Quick Actions - Only show when no response */}
+        {!aiResponse && !isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
+            <Button 
+              variant="outline" 
+              className="bg-card/50 border-border text-foreground hover:bg-accent justify-start p-4 h-auto rounded-2xl"
+              onClick={() => setInputText("Help me write a gratitude journal entry for today.")}
+            >
+              <Sparkles className="mr-3 text-primary" size={18} />
+              <div className="text-left">
+                <div className="font-medium text-sm">Daily Gratitude</div>
+                <div className="text-xs text-muted-foreground">Reflect on blessings</div>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="bg-card/50 border-border text-foreground hover:bg-accent justify-start p-4 h-auto rounded-2xl"
+              onClick={() => setInputText("Give me a creative writing prompt to explore my imagination.")}
+            >
+              <BookOpen className="mr-3 text-primary" size={18} />
+              <div className="text-left">
+                <div className="font-medium text-sm">Creative Prompt</div>
+                <div className="text-xs text-muted-foreground">Spark imagination</div>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="bg-card/50 border-border text-foreground hover:bg-accent justify-start p-4 h-auto rounded-2xl"
+              onClick={() => setInputText("Help me reflect on my personal growth and goals.")}
+            >
+              <History className="mr-3 text-primary" size={18} />
+              <div className="text-left">
+                <div className="font-medium text-sm">Self Reflection</div>
+                <div className="text-xs text-muted-foreground">Explore thoughts</div>
+              </div>
+            </Button>
           </div>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Creative Writing</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {prompts.creative.map((prompt) => (
-              <PromptCard 
-                key={prompt.id} 
-                prompt={prompt} 
-                getDifficultyColor={getDifficultyColor}
-                onStartWriting={handleStartWriting}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Load More */}
-      <div className="text-center">
-        <Button variant="outline" className="w-full sm:w-auto">
-          Load More Prompts
-        </Button>
+        )}
       </div>
     </div>
   );

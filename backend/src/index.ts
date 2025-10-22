@@ -8,6 +8,8 @@ import logger from './utils/logger';
 import authRoutes from './routes/auth.routes';
 import journalEntryRoutes from './routes/journalentry.routes';
 import profileRoutes from './routes/profile.routes';
+import aiRoutes from './routes/ai.routes';
+import photoRoutes from './routes/photo.routes';
 import { protectAllRoutes } from './middleware/protectAllRoutes.middleware';
 
 // Create Express app
@@ -32,6 +34,13 @@ const fs = require('fs');
 if (!fs.existsSync(uploadsPath)) {
   console.log('Uploads directory does not exist, creating it...');
   fs.mkdirSync(uploadsPath, { recursive: true });
+}
+
+// Create temp directory for multer uploads
+const tempDir = path.join(__dirname, '../uploads/temp');
+if (!fs.existsSync(tempDir)) {
+  console.log('Temp directory does not exist, creating it...');
+  fs.mkdirSync(tempDir, { recursive: true });
 }
 
 // Add middleware to log static file requests
@@ -113,6 +122,8 @@ app.use(protectAllRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/journal-entries', journalEntryRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/photos', photoRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

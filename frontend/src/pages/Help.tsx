@@ -59,7 +59,7 @@ const Help = () => {
                     <p className="text-sm text-muted-foreground">Sign in, manage profile, and access your dashboard.</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Link to="/signin"><Button size="sm" variant="outline">Sign In</Button></Link>
-                      <Link to="/dashboard/reflections"><Button size="sm" variant="outline">Open Dashboard</Button></Link>
+                      <Link to="/dashboard/entries"><Button size="sm" variant="outline">Open Dashboard</Button></Link>
                     </div>
                   </div>
                 </div>

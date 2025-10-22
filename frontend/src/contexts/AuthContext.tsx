@@ -6,6 +6,7 @@ interface User {
   id: string;
   email: string;
   username: string;
+  profilePic?: string;
   isEmailVerified?: boolean;
   // Add other user properties as needed
 }
@@ -86,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('token', token);
         setUser(user);
         setToken(token);
-        navigate('/dashboard/reflections');
+        navigate('/dashboard/entries');
       } else {
         throw new Error(response.error || 'Login failed');
       }
@@ -119,7 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           localStorage.setItem('token', token);
           setUser(user);
           setToken(token);
-          navigate('/dashboard/reflections');
+          navigate('/dashboard/entries');
           return { requiresVerification: false };
         }
       } else {
@@ -142,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('token', token);
         setUser(user);
         setToken(token);
-        navigate('/dashboard/reflections');
+        navigate('/dashboard/entries');
       } else {
         throw new Error(response.error || 'Email verification failed');
       }

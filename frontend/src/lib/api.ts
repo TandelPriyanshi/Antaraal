@@ -38,6 +38,13 @@ export interface IApi {
     resendOTP(data: { email: string }): Promise<ApiResponse<{ userId: number; message: string; emailSent?: boolean }>>;
     getCurrentUser(): Promise<ApiResponse<{ user: any }>>;
   };
+  photos: {
+    uploadPhoto(formData: FormData): Promise<ApiResponse<{ id: number; filename: string; folder: string; path: string; size: number; uploadedAt: string }>>;
+    getPhotosByFolder(folderName: string): Promise<ApiResponse<any[]>>;
+    getUserFolders(): Promise<ApiResponse<string[]>>;
+    createFolder(folderName: string): Promise<ApiResponse<{ folderName: string }>>;
+    deletePhoto(photoId: number): Promise<ApiResponse<void>>;
+  };
   get<T>(endpoint: string): Promise<ApiResponse<T>>;
   post<T>(endpoint: string, data: any): Promise<ApiResponse<T>>;
   put<T>(endpoint: string, data: any): Promise<ApiResponse<T>>;
@@ -113,6 +120,38 @@ const api: IApi = {
 
     getCurrentUser() {
       return api.get<{ user: any }>('/auth/me');
+    },
+  },
+
+  // Photo endpoints
+  photos: {
+    async uploadPhoto(formData: FormData) {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/photos/upload`, {
+        method: 'POST',
+        headers: {
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
+        body: formData,
+      });
+
+      return handleResponse<{ id: number; filename: string; folder: string; path: string; size: number; uploadedAt: string }>(response);
+    },
+
+    async getPhotosByFolder(folderName: string) {
+      return api.get<any[]>(`/photos/folder/${encodeURIComponent(folderName)}`);
+    },
+
+    async getUserFolders() {
+      return api.get<string[]>('/photos/folders');
+    },
+
+    async createFolder(folderName: string) {
+      return api.post<{ folderName: string }>('/photos/folders', { folderName });
+    },
+
+    async deletePhoto(photoId: number) {
+      return api.delete<void>(`/photos/${photoId}`);
     },
   },
 

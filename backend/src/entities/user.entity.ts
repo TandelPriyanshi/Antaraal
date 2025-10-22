@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { JournalEntry } from './Journal.entity';
+import { Photo } from './photo.entity';
 
 @Entity()
 export class Users {
@@ -32,6 +33,9 @@ export class Users {
 
   @OneToMany(() => JournalEntry, (journalEntry) => journalEntry.user)
   journalEntries: JournalEntry[];
+
+  @OneToMany(() => Photo, (photo) => photo.user)
+  photos: Photo[];
 
   // Alias for TypeORM repository
   static getRepository = (dataSource: any) => dataSource.getRepository(Users);

@@ -140,7 +140,7 @@ const EntriesList = () => {
                 {!searchQuery && (
                   <Button 
                     onClick={() => navigate('/dashboard/new-entry')}
-                    className="bg-gradient-hero text-primary-foreground"
+                    className="bg-gradient-hero text-primary-foreground hover:shadow-elevated transition-all"
                   >
                     Create First Entry
                   </Button>

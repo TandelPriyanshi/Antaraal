@@ -2,9 +2,16 @@ import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from "@/components/ui/sheet";
 import { 
   BookOpen, 
-  Calendar, 
   BarChart3, 
   Lightbulb, 
   FileText, 
@@ -12,13 +19,30 @@ import {
   LogOut,
   Menu,
   X,
-  Plus
+  Plus,
+  Images,
+  MessageSquarePlus,
+  History,
+  Search,
+  Sparkles,
+  Trash2
 } from "lucide-react";
+import api from "@/lib/api";
+
+interface ConversationItem {
+  id: number;
+  userMessage: string;
+  aiResponse: string;
+  createdAt: string;
+}
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<ConversationItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [promptMenuOpen, setPromptMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -118,10 +142,10 @@ const DashboardLayout = () => {
   };
 
   const navigation = [
-    { name: 'Daily Reflections', href: '/dashboard/reflections', icon: Calendar },
     { name: 'Entry Details', href: '/dashboard/entries', icon: BookOpen },
-    { name: 'Inspiration', href: '/dashboard/inspiration', icon: Lightbulb },
     { name: 'Writing Prompts', href: '/dashboard/prompts', icon: FileText },
+    { name: 'Album', href: '/dashboard/albums', icon: Images },
+    { name: 'Autobiography', href: '/dashboard/inspiration', icon: Lightbulb },
     { name: 'Statistics', href: '/dashboard/stats', icon: BarChart3 },
   ];
 
@@ -133,6 +157,60 @@ const DashboardLayout = () => {
   const handleNewEntry = () => {
     // Navigate to new entry form or open modal
     navigate('/dashboard/new-entry');
+  };
+
+  // Load conversation history
+  const loadConversationHistory = async () => {
+    try {
+      const response = await api.get<{ conversations: ConversationItem[] }>('/ai/history?limit=50');
+      if (response.data) {
+        setConversationHistory(response.data.conversations);
+      }
+    } catch (error) {
+      console.error('Failed to load conversation history:', error);
+    }
+  };
+
+  // Listen for conversation updates
+  useEffect(() => {
+    const handleConversationUpdate = () => {
+      if (showHistory) {
+        loadConversationHistory();
+      }
+    };
+
+    window.addEventListener('conversationUpdated', handleConversationUpdate);
+
+    return () => {
+      window.removeEventListener('conversationUpdated', handleConversationUpdate);
+    };
+  }, [showHistory]);
+
+  const handleNewChat = () => {
+    setShowHistory(false);
+    setPromptMenuOpen(false);
+    window.dispatchEvent(new Event('newChat'));
+  };
+
+  const handleShowHistory = async () => {
+    setShowHistory(true);
+    await loadConversationHistory();
+  };
+
+  const loadConversation = (conv: ConversationItem) => {
+    setShowHistory(false);
+    setPromptMenuOpen(false);
+    window.dispatchEvent(new CustomEvent('loadConversation', { detail: conv }));
+  };
+
+  const deleteConversation = async (convId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await api.delete(`/ai/conversation/${convId}`);
+      await loadConversationHistory();
+    } catch (error) {
+      console.error('Failed to delete conversation:', error);
+    }
   };
 
   return (
@@ -248,7 +326,7 @@ const DashboardLayout = () => {
                 <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity flex items-center justify-center">
                   <User size={16} className="text-white" />
                 </div>
-              </div>
+            </div>
             </button>
             <div>
               <p className="text-sm font-medium text-foreground">Welcome back!</p>
@@ -282,16 +360,135 @@ const DashboardLayout = () => {
             {navigation.find(item => item.href === location.pathname)?.name || 'Dashboard'}
           </h1>
           
-          <div className="flex items-center space-x-2">
-            <Button 
-              size="sm" 
-              onClick={handleNewEntry}
-              className="bg-gradient-hero text-primary-foreground hover:shadow-elevated transition-all"
-            >
-              <Plus size={16} className="mr-2" />
-              New Entry
-            </Button>
-          </div>
+          {location.pathname === '/dashboard/prompts' ? (
+            <Sheet open={promptMenuOpen} onOpenChange={setPromptMenuOpen}>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="rounded-lg bg-card hover:bg-accent border border-border shadow-sm h-10 w-10"
+                >
+                  <Menu size={20} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 bg-card border-border">
+                <SheetHeader>
+                  <SheetTitle className="text-foreground">Menu</SheetTitle>
+                </SheetHeader>
+                
+                {!showHistory ? (
+                  // Main Menu
+                  <div className="mt-6 space-y-2">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-foreground hover:bg-accent"
+                      onClick={handleNewChat}
+                    >
+                      <MessageSquarePlus size={18} className="mr-3" />
+                      New Chat
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-foreground hover:bg-accent"
+                      onClick={handleShowHistory}
+                    >
+                      <History size={18} className="mr-3" />
+                      History
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-foreground hover:bg-accent"
+                      onClick={() => setPromptMenuOpen(false)}
+                    >
+                      <BookOpen size={18} className="mr-3" />
+                      Prompt Library
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-foreground hover:bg-accent"
+                      onClick={() => setPromptMenuOpen(false)}
+                    >
+                      <Search size={18} className="mr-3" />
+                      Search
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-foreground hover:bg-accent"
+                      onClick={() => setPromptMenuOpen(false)}
+                    >
+                      <Sparkles size={18} className="mr-3" />
+                      AI Prompts
+                    </Button>
+                  </div>
+                ) : (
+                  // History View
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-semibold text-foreground">Conversation History</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowHistory(false)}
+                      >
+                        Back
+                      </Button>
+                    </div>
+                    <ScrollArea className="h-[calc(100vh-200px)]">
+                      <div className="space-y-2">
+                        {conversationHistory.map((conv) => (
+                          <div
+                            key={conv.id}
+                            className="group relative p-3 rounded-lg hover:bg-accent cursor-pointer transition-colors border border-border"
+                            onClick={() => loadConversation(conv)}
+                          >
+                            <div className="flex items-start gap-2">
+                              <MessageSquarePlus size={14} className="text-muted-foreground flex-shrink-0 mt-1" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-foreground truncate">
+                                  {conv.userMessage.length > 40 ? conv.userMessage.substring(0, 40) + '...' : conv.userMessage}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {new Date(conv.createdAt).toLocaleDateString()} at {new Date(conv.createdAt).toLocaleTimeString()}
+                                </p>
+                              </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="opacity-0 group-hover:opacity-100 h-6 w-6 transition-opacity"
+                                onClick={(e) => deleteConversation(conv.id, e)}
+                              >
+                                <Trash2 size={12} />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                        {conversationHistory.length === 0 && (
+                          <div className="text-sm text-muted-foreground text-center py-8">
+                            No conversation history yet.<br />Start chatting to see your conversations here!
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )}
+              </SheetContent>
+            </Sheet>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <Button 
+                size="sm" 
+                onClick={handleNewEntry}
+                className="bg-gradient-hero text-primary-foreground hover:shadow-elevated transition-all"
+              >
+                <Plus size={16} className="mr-2" />
+                New Entry
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Page content */}
