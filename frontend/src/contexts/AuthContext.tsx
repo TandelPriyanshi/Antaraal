@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   username: string;
@@ -91,9 +91,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         throw new Error(response.error || 'Login failed');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       // Clean up verification flags if this isn't a verification error
-      if (error.message !== 'VERIFICATION_REQUIRED') {
+      if (error instanceof Error && error.message !== 'VERIFICATION_REQUIRED') {
         localStorage.removeItem('verificationRequired');
         localStorage.removeItem('verificationUserId');
         localStorage.removeItem('verificationEmail');

@@ -130,10 +130,6 @@ const EntryDetail = () => {
               <Share size={14} className="mr-2" />
               Share
             </Button>
-            <Button size="sm" variant="outline">
-              <Bookmark size={14} className="mr-2" />
-              Save
-            </Button>
             <Button 
               size="sm" 
               onClick={isEditing ? handleSave : () => setIsEditing(true)}

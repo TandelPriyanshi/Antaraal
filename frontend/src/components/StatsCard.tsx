@@ -13,7 +13,7 @@ const StatsCard = ({ icon, label, value, className = "" }: StatsCardProps) => {
     <Card className={`border-0 shadow-soft ${className}`}>
       <CardContent className="p-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-gradient-subtle rounded-lg">
+          <div className="p-2 bg-gradient-subtle rounded-lg" data-testid="stats-icon">
             {icon}
           </div>
           <div>

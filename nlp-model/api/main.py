@@ -26,14 +26,14 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Temporarily disable CORS middleware to test
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  # In production, specify actual origins
-#     allow_credentials=True,
-#     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-#     allow_headers=["*"],
-# )
+# Enable CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Global model instances
 summarizer = None
@@ -441,3 +441,4 @@ if __name__ == "__main__":
         reload=True,
         log_level="info"
     )
+

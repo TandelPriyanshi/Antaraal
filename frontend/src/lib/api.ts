@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002/api';
+// Force the correct backend URL
+const API_BASE_URL = 'http://localhost:5002/api';
 
 interface ApiResponse<T = any> {
   data?: T;
@@ -39,7 +40,7 @@ export interface IApi {
     getCurrentUser(): Promise<ApiResponse<{ user: any }>>;
   };
   photos: {
-    uploadPhoto(formData: FormData): Promise<ApiResponse<{ id: number; filename: string; folder: string; path: string; size: number; uploadedAt: string }>>;
+    uploadPhoto(formData: FormData): Promise<ApiResponse<{ id: number; filename: string; folder: string; path: string; size: number; uploadedAt: string; mimetype?: string }>>;
     getPhotosByFolder(folderName: string): Promise<ApiResponse<any[]>>;
     getUserFolders(): Promise<ApiResponse<string[]>>;
     createFolder(folderName: string): Promise<ApiResponse<{ folderName: string }>>;
@@ -135,7 +136,15 @@ const api: IApi = {
         body: formData,
       });
 
-      return handleResponse<{ id: number; filename: string; folder: string; path: string; size: number; uploadedAt: string }>(response);
+      return handleResponse<{ 
+        id: number; 
+        filename: string; 
+        folder: string; 
+        path: string; 
+        size: number; 
+        uploadedAt: string;
+        mimetype?: string;
+      }>(response);
     },
 
     async getPhotosByFolder(folderName: string) {
@@ -191,4 +200,4 @@ const api: IApi = {
 };
 
 // Export the API instance
-export default api;
+export  default api;

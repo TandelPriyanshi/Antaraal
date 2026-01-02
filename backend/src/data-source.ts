@@ -9,26 +9,30 @@ import { Conversation } from './entities/Conversation.entity';
 import { Photo } from './entities/photo.entity';
 
 export const AppDataSource = new DataSource({
-  type: 'sqlite',
-  database: config.database.database, // This will be the SQLite file path
+  type: 'postgres',
+  host: config.database.host,
+  port: config.database.port,
+  username: config.database.username,
+  password: config.database.password,
+  database: config.database.database,
+  ssl: config.database.ssl,
   synchronize: config.server.env === 'development',
   logging: config.server.env === 'development' ? 'all' : ['error'],
   logger: config.server.env === 'development' ? 'advanced-console' : 'file',
-  entities: [Users, JournalEntry, Tags, Conversation, Photo ],
-  migrations: [],
+  entities: [Users, JournalEntry, Tags, Conversation, Photo],
+  migrations: ['migrations/*.ts'],
+  migrationsRun: true,
   subscribers: [],
 });
 
-// Enhanced connection with better error handling
 export const initializeDatabase = async (): Promise<void> => {
   try {
     await AppDataSource.initialize();
-    logger.info('Database connection established successfully', {
+    logger.info('PostgreSQL database connection established successfully', {
       database: config.database.database
     });
   } catch (error) {
-    logger.error('Error during database initialization:', error);
+    logger.error('Error during PostgreSQL database initialization:', error);
     process.exit(1);
   }
 };
-

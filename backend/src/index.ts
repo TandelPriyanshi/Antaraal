@@ -10,13 +10,19 @@ import journalEntryRoutes from './routes/journalentry.routes';
 import profileRoutes from './routes/profile.routes';
 import aiRoutes from './routes/ai.routes';
 import photoRoutes from './routes/photo.routes';
+import statsRoutes from './routes/stats.routes';
 import { protectAllRoutes } from './middleware/protectAllRoutes.middleware';
 
 // Create Express app
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:8080', // Your frontend URL
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Debug route to check file access (add this before auth middleware)
@@ -124,6 +130,7 @@ app.use('/api/journal-entries', journalEntryRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/photos', photoRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

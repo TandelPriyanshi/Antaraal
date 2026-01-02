@@ -1,12 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Trash2, Upload, Calendar } from "lucide-react";
+import { ArrowLeft, Trash2, Upload, Calendar, RefreshCw } from "lucide-react";
 import { usePhotos, Photo } from "@/hooks/use-photos";
 import { useToast } from "@/hooks/use-toast";
 
@@ -94,8 +90,10 @@ const AlbumDetail: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button size="sm" variant="outline" onClick={() => navigate(-1)}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => loadPhotos(albumName)}>
+                <RefreshCw className="h-4 w-4" />
               </Button>
               <div>
                 <h1 className="text-3xl font-bold text-foreground">{title}</h1>

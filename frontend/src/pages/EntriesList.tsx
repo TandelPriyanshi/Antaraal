@@ -4,13 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useEntries } from "@/contexts/EntriesContext";
 import { useNavigate } from "react-router-dom";
+import { useEntries, Entry } from "@/contexts/EntriesContext";
+import { useToast } from "@/hooks/use-toast";
 
 const EntriesList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { entries, deleteEntry } = useEntries();
   const navigate = useNavigate();
+  const { getEntry, updateEntry } = useEntries();
+  const { toast } = useToast();
+  const [content, setContent] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [entry, setEntry] = useState<Entry | null>(null);
+  
+  
 
   // Force refresh entries when component mounts
   useEffect(() => {
@@ -39,9 +47,25 @@ const EntriesList = () => {
     navigate(`/dashboard/entries/${entryId}`);
   };
 
-  const handleEditEntry = (entryId: string) => {
-    navigate(`/dashboard/entries/${entryId}/edit`);
-  };
+  // const handleEditEntry = (entryId: string) => {
+    // };
+    
+    const handleEditEntry = (entryId: string) => {
+      navigate(`/dashboard/entries/${entryId}`);
+      const wordCount = content.split(' ').filter(word => word.length > 0).length;
+      updateEntry(entry.id, {
+        content,
+        wordCount,
+        readTime: `${Math.ceil(wordCount / 200)} min read`
+      });
+      
+      toast({
+        title: "Entry Updated!",
+        description: "Your changes have been saved successfully.",
+      });
+      
+      setIsEditing(false);
+    };
 
   const handleDeleteEntry = (entryId: string) => {
     if (window.confirm('Are you sure you want to delete this entry?')) {
@@ -171,6 +195,11 @@ const EntriesList = () => {
                     <Button size="sm" variant="ghost" className="p-2" onClick={() => handleEditEntry(entry.id)}>
                       <Edit size={14} />
                     </Button>
+                    {/* <Button 
+                      size="sm" 
+                      onClick={isEditing ? handleEditEntry : () => setIsEditing(true)}
+                      className={isEditing ? "bg-gradient-hero text-primary-foreground" : ""}
+                    ></Button> */}
                     <Button 
                       size="sm" 
                       variant="ghost" 

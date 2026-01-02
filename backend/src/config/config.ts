@@ -4,7 +4,13 @@ dotenv.config();
 
 interface Config {
   database: {
-    database: string; // SQLite database file path
+    type: 'postgres';
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    database: string;
+    ssl: boolean;
   };
   jwt: {
     secret: string;
@@ -23,7 +29,13 @@ interface Config {
 export const config: Config = {
   // Database Configuration
   database: {
-    database: process.env.DB_DATABASE || './database/antaraal.sqlite',
+    type: 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    username: process.env.DB_USERNAME || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    database: process.env.DB_DATABASE || 'antaraal',
+    ssl: process.env.DB_SSL === 'true',
   },
 
   // JWT Configuration
