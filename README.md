@@ -1,46 +1,59 @@
-# 🕰️ Antaraal – Digital Autobiography Chatbot  
+# Antaraal - Journaling and Self-Reflection App
 
-Antaraal is an **NLP-powered chatbot** that asks users daily life questions and gradually builds a **digital autobiography**.  
-The goal is to capture memories, stories, and emotions in a conversational way, preserving them for future reflection.  
+A full-stack journaling application that helps users track their thoughts, moods, and personal growth over time.
 
----
+## ✨ Features
 
-## 🎯 Vision & Goal
-- Create a personal **story-archiving assistant**.  
-- Use **NLP** to ask meaningful questions about daily life, habits, and experiences.  
-- Automatically generate a **digital autobiography / life timeline** from user responses.  
-- Encourage **self-reflection, journaling, and emotional well-being**.  
+- **Journal Entries**: Create, read, update, and delete journal entries
+- **Mood Tracking**: Track your daily mood and emotions
+- **Statistics & Insights**: Get detailed analytics on your journaling habits
+- **Photo Journaling**: Attach photos to your entries
+- **User Authentication**: Secure signup and login functionality
+- **Responsive Design**: Works on desktop and mobile devices
 
----
+## 🚀 Tech Stack
 
-## 📦 Planned Features
-- 🤖 **Chatbot Interface** → conversational questions about user’s life.  
-- 📝 **Memory Capture** → stores structured + unstructured responses.  
-- 📊 **Timeline Generator** → builds a chronological autobiography.  
-- 🔐 **Authentication** → secure and private user data.  
-- 📂 **Export Options** → generate PDF/Doc autobiography.   
+### Frontend
+- React.js with TypeScript
+- Vite.js
+- TailwindCSS
+- React Router
+- React Query
+- Shadcn UI Components
 
----
+### Backend
+- Node.js with Express
+- TypeScript
+- TypeORM
+- SQLite (for development)
+- JWT Authentication
 
-## 🛠 Tech Stack (Planned)
-- **Frontend:** React + TypeScript + TailwindCSS  
-- **Backend:** Node.js / Express OR Python (FastAPI)  
-- **Database:** PostgreSQL (for structured Q/A)  
-- **NLP Models:** HuggingFace Transformers / spaCy  
-- **Deployment:** Vercel (frontend), Railway/Heroku (backend)
+### Additional Tools
+- ESLint & Prettier for code quality
+- Vitest for testing
+- GitHub Actions for CI/CD
 
----
+## 🛠️ Setup
 
-## 🚧 Current Status
-🚀 **In Progress** – Early development stage.  
-- [ ] Authentication
+### Prerequisites
+- Node.js (v16+)
+- npm or yarn
+- Git
 
----
+### Installation
 
-## ⚙️ Installation & Setup (Future)
-Once the base version is ready, setup will include:  
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/TandelPriyanshi/Antaraal
+   cd antaraal
+      
+2. **Install dependencies**
+   ```bash
+   npm install-all
+   
+3. **Run the application**
+   ```bash
+   npm run dev
 
-```bash
-# Clone the repo
-git clone https://github.com/TandelPriyanshi/Antaraal
-cd antaraal
+### Acknowledgments
+Special thanks to all contributors
